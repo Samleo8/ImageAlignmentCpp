@@ -4,6 +4,7 @@
 *.zip
 *.mp4
 docs/*.log
+python/
 
 # Build files
 build
