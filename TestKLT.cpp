@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
     std::string imageSuffix = ".jpg";
     
     unsigned int imageCnt;
+
     for (imageCnt = startCnt; imageCnt < endCnt; imageCnt++) {
         std::stringstream ss;
         ss << std::setw(5) << std::setfill('0') << imageCnt;

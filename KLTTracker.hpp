@@ -20,7 +20,7 @@ typedef float bbox_t[4];
 
 class KLTTracker {
   private:
-    bbox_t bbox;
+    bbox_t mBbox;
 
   public:
     KLTTracker(/* args */);
@@ -28,7 +28,7 @@ class KLTTracker {
 
     // BBOX Interface
     bbox_t &getBBOX();
-    void setBBOX(bbox_t bbox);
+    void setBBOX(bbox_t aBbox);
 };
 
 #endif
