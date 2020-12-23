@@ -40,8 +40,41 @@ void ImageAlignment::setBBOX(float aTop, float aLeft, float aBottom,
 }
 
 /**
- * @brief Get template image
+ * @brief Get template image (ie prev frame)
  */
 cv::Mat &ImageAlignment::getTemplateImage() {
     return mTemplateImage;
 }
+
+/**
+ * @brief Set template image
+ * @param[in] aImg Template image
+ */
+void &ImageAlignment::setTemplateImage(cv::Mat &aImg) {
+    mTemplateImage = aImg;
+}
+
+/**
+ * @brief Get current image
+ */
+cv::Mat &ImageAlignment::getCurrentImage() {
+    return mTemplateImage;
+}
+
+/**
+ * @brief Set current image
+ * @param[in] aImg Current image
+ */
+void &ImageAlignment::setTemplateImage(cv::Mat &aImg) {
+    mTemplateImage = aImg;
+}
+
+/**
+ * @brief Using the iteratively saved BBOX, get template from "current" frame 
+ * (which is the previous frame) and perform Baker-Matthews IC image alignment:
+ *
+ * Proceed to update new bbox (detection) accordingly
+ * 
+ * @param[in] newImage 
+ */
+void ImageAlignment::track(cv::Mat &newImage);

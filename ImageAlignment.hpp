@@ -41,7 +41,10 @@ class ImageAlignment {
 
     // Get and Set Images
     cv::Mat &getTemplateImage();
+    void setTemplateImage(cv::Mat &aImg);
+
     cv::Mat &getCurrImage();
+    void setCurrImage(cv::Mat &aImg);
 
     // Track
     void track(cv::Mat &newImage);
