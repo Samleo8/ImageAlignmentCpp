@@ -1,12 +1,12 @@
-#ifndef __KLT_TRACKER_H__
-#define __KLT_TRACKER_H__
+#ifndef __IMAGE_ALIGNMENT_H__
+#define __IMAGE_ALIGNMENT_H__
 
 #include <Eigen/Dense>
-#include <opencv2/opencv.hpp>
+#include <opencv/opencv.hpp>
 #include <vector>
 
 /**
- * @brief KLT Tracker Class
+ * @brief Image Alignment Class
  *
  * Uses Baker-Matthews Inverse Compositional tracking algorithm
  * along with robust M-estimator to handle illumination differences
@@ -18,7 +18,7 @@
 
 typedef float bbox_t[4];
 
-class KLTTracker {
+class ImageAlignment {
   private:
     bbox_t mBbox;
 
@@ -29,6 +29,9 @@ class KLTTracker {
     // BBOX Interface
     bbox_t &getBBOX();
     void setBBOX(bbox_t aBbox);
+
+    // Track
+    void track();
 };
 
 #endif

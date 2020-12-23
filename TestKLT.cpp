@@ -6,10 +6,19 @@
 
 namespace fs = std::filesystem;
 
-#include "KLTTracker.hpp"
+#include "ImageAlignment.hpp"
+
+void getImagePath(fs::path &imageFolder, unsigned int imageCnt,
+                  std::string &imageSuffix, fs::path &imagePath) {
+    std::stringstream ss;
+    ss << std::setw(5) << std::setfill('0') << imageCnt;
+    std::string imgName = ss.str() + imageSuffix;
+
+    imagePath = imageFolder / imgName;
+}
 
 int main(int argc, char *argv[]) {
-    KLTTracker &track();
+    ImageAlignment &track();
 
     std::string imageSequence(
         (argc > 1) ? std::string(argv[1]) : "landing"
@@ -26,15 +35,16 @@ int main(int argc, char *argv[]) {
     
     unsigned int imageCnt;
 
-    for (imageCnt = startCnt; imageCnt < endCnt; imageCnt++) {
-        std::stringstream ss;
-        ss << std::setw(5) << std::setfill('0') << imageCnt;
-        std::string imgName = ss.str() + imageSuffix;
-        
-        fs::path imagePath = imageFolder / imgName;
+    // Previous Frame image        
+    
+
+    // Loop through image frames
+    for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
+        fs::path imagePath;
+
+        getImagePath(imageFolder, imageCnt, imageSuffix, imagePath);
 
         std::cout << imagePath.string() << std::endl;
-        // continue;
 
         cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
         
