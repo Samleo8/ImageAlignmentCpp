@@ -15,13 +15,20 @@
  * Parent program calls `track()` to track the template image in the next frame
  * Updating the BBOX accordingly
  */
+
+typedef float bbox_t[4];
+
 class KLTTracker {
   private:
-    /* private data */
+    bbox_t bbox;
+
   public:
-    float bbox[4];
     KLTTracker(/* args */);
     ~KLTTracker();
+
+    // BBOX Interface
+    bbox_t &getBBOX();
+    void setBBOX(bbox_t bbox);
 };
 
 #endif
