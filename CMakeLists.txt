@@ -19,6 +19,7 @@ add_compile_definitions(EIGEN_DONT_PARALLELIZE)
 # KLT Test
 add_executable(
   TestKLT
+  TestKLT.cpp
   KLTTracker.cpp)
 set_property(TARGET TestKLT PROPERTY C_STANDARD 11)
 set_property(TARGET TestKLT PROPERTY CXX_STANDARD 17)
