@@ -19,7 +19,7 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Testing on sequence " << imageSequence << " from frames " << startCnt << " to " << endCnt;
 
-    fs::path imageFolder("data");
+    fs::path imageFolder("../data");
     imageFolder /= imageSequence;
 
     std::string imageSuffix = ".jpg";
@@ -32,10 +32,11 @@ int main(int argc, char *argv[]) {
         
         fs::path imagePath = imageFolder / imgName;
 
-        std::cout << imagePath.string();
+        std::cout << imagePath.string() << std::endl;
+        // continue;
 
-        cv::Mat image = cv::imread(imagePath);
-
+        cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
+        
         cv::imshow("Image", image);
         char c = cv::waitKey(0);
         if (c == 'q') {
