@@ -27,4 +27,10 @@ if __name__ == "__main__":
     else:
         os.makedirs(seqName, exist_ok=True)
 
-    imgArr = np.load(filename)
+    data = np.load(filename)
+    numFrames = data.shape[2]
+
+    for i in range(numFrames):
+        img = data[:, :, i]
+
+        plt.imsave(f"%s/%05d.jpg" % (seqName, i), img, cmap='gray')
