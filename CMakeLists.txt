@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(KLTTracker)
+project(ImageAlignment)
 
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
@@ -20,7 +20,7 @@ add_compile_definitions(EIGEN_DONT_PARALLELIZE)
 add_executable(
   TestKLT
   TestKLT.cpp
-  KLTTracker.cpp)
+  ImageAlignment.cpp)
 set_property(TARGET TestKLT PROPERTY C_STANDARD 11)
 set_property(TARGET TestKLT PROPERTY CXX_STANDARD 17)
 target_link_libraries(TestKLT ${OpenCV_LIBS})
