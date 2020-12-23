@@ -5,10 +5,10 @@ project(KLTTracker)
 find_package(OpenCV REQUIRED)
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 # find_package(Boost REQUIRED)
-find_package(Ceres REQUIRED COMPONENTS EigenSparse)
+# find_package(Ceres REQUIRED COMPONENTS EigenSparse)
 find_package(OpenMP)
 
-include_directories(${Boost_INCLUDE_DIRS} ${CERES_INCLUDE_DIRS}
+include_directories(${Boost_INCLUDE_DIRS} # ${CERES_INCLUDE_DIRS}
                     ${EIGEN3_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 set(CMAKE_C_STANDARD 11)
@@ -22,7 +22,8 @@ add_executable(
   TestKLT.cpp)
 set_property(TARGET TestKLT PROPERTY C_STANDARD 11)
 set_property(TARGET TestKLT PROPERTY CXX_STANDARD 17)
-target_link_libraries(TestKLT ${CERES_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(TestKLT ${OpenCV_LIBS})
+# target_link_libraries(TestKLT ${CERES_LIBRARIES} ${OpenCV_LIBS})
 
 # if(OpenMP_CXX_FOUND)
 #   target_link_libraries(
