@@ -99,5 +99,17 @@ void ImageAlignment::track(cv::Mat &aNewImage,
     cv::Mat template;
     cv::getRectSubPix(templateImage, bboxSize, bboxCenter, template);
 
+    // Get template image gradients
+    cv::Mat templateGradX, templateGradY;
+    cv::Sobel(template, templateGradX, cv::CV_64F, 1, 0);
+    cv::Sobel(template, templateGradY, cv::CV_64F, 0, 1);
+
+    std::cout << "T_X\n" << templateGradX << std::endl;
+    std::cout << "T_Y\n" << templateGradY << std::endl;
+
+    // Precompute Jacobian and Hessian
+
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
+
+
 }

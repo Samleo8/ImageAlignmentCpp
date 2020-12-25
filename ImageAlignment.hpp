@@ -1,6 +1,7 @@
 #ifndef __IMAGE_ALIGNMENT_H__
 #define __IMAGE_ALIGNMENT_H__
 
+#include <iostream>
 #include <Eigen/Dense>
 #include <opencv2/opencv.hpp>
 #include <vector>
