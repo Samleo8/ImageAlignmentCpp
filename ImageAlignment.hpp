@@ -47,7 +47,7 @@ class ImageAlignment {
 
     // BBOX Interface
     bbox_t &getBBOX();
-    void setBBOX(bbox_t &aBbox);
+    void setBBOX(const bbox_t &aBbox);
     void setBBOX(const float aTop, const float aLeft, const float aBottom, const float aRight);
 
     // Get and Set Images
