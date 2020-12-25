@@ -2,7 +2,7 @@
 #define __IMAGE_ALIGNMENT_H__
 
 #include <Eigen/Dense>
-#include <opencv/opencv.hpp>
+#include <opencv2/opencv.hpp>
 #include <vector>
 
 /**
