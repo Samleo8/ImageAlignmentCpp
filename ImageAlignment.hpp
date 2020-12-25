@@ -32,13 +32,11 @@ class ImageAlignment {
     cv::Mat mCurrentImage;
 
   public:
-    // Constructor, destructor
+    // Constructor
     ImageAlignment();
     ImageAlignment(const cv::Mat &aImage);
     ImageAlignment(const bbox_t &aBbox);
     ImageAlignment(const cv::Mat &aImage, const bbox_t &aBbox);
-
-    ~ImageAlignment();
 
     // Init
     void init(const cv::Mat &aImage);
