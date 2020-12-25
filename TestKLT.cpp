@@ -36,7 +36,9 @@ int main(int argc, char *argv[]) {
     // Previous Frame image
     fs::path imagePath;
     getImagePath(imageFolder, imageCnt, imageSuffix, imagePath);
-    cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
+    cv::Mat image;
+    
+    image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
 
     ImageAlignment tracker(image);
     
@@ -49,8 +51,8 @@ int main(int argc, char *argv[]) {
 
         std::cout << imagePath.string() << std::endl;
 
-        cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
-        
+        image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
+
         tracker.track(image);
 
         cv::imshow("Image", image);
