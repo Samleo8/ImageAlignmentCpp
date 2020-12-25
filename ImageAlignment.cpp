@@ -166,10 +166,15 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Sobel(templateSubImage, templateGradX, CV_32F, 1, 0);
     cv::Sobel(templateSubImage, templateGradY, CV_32F, 0, 1);
 
-    std::cout << "T_X\n" << templateGradX << std::endl;
-    std::cout << "T_Y\n" << templateGradY << std::endl;
-
     // Precompute Jacobian and Hessian
+
+    float deltaX = bboxSize.width / int(bboxSize.width);
+    float deltaY = bboxSize.height / int(bboxSize.height);
+    for (float y = bbox[1]; x <= bbox[3]; y += deltaY) {
+        for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
+
+        }
+    }
 
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
 }
