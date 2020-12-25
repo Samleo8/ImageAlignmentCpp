@@ -181,16 +181,17 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     /* Precompute Jacobian and Hessian */
     // Initialise matrices
-    Eigen::VectorXd Jacobian(6);
-    Eigen::MatrixXd Hessian(6, 6);
-    Eigen::MatrixXd InverseHessian(6, 6);
+    Eigen::VectorXf Jacobian(6);
+    Eigen::MatrixXf Hessian(6, 6);
+    Eigen::MatrixXf InverseHessian(6, 6);
 
-    Eigen::MatrixXd dWdp(2, 6);
-    Eigen::RowVector2d delI(2);
+    Eigen::MatrixXf dWdp(2, 6);
+    Eigen::RowVector2f delI(2);
 
     Jacobian.setZero();
 
-    std::cout << templateSubImage << std::endl;
+    std::cout << templateGradX << std::endl;
+    std::cout << templateGradY << std::endl;
 
     // Loop over everything, linearly-spaced
     size_t i = 0, j = 0;
@@ -201,8 +202,18 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             // Create dWdp matrix
             dWdp << x, 0, y, 0, 1, 0, 0, x, 0, y, 0, 1;
 
-            delI << templateGradX.at<double>(i, j),
-                templateGradY.at<double>(i, j);
+            float delIx = templateGradX.at<float>(i, j);
+            float delIy = templateGradY.at<float>(i, j);
+
+            delI << delIx, delIy;
+
+            if (delI.coeff(0,0) != 0) {
+                std::cout << delIx << "," << delIy << std::endl;
+
+                std::cout << delI << std::endl;
+                std::cout << dWdp << std::endl;
+                std::cout << delI * dWdp << std::endl << std::endl;
+            }
 
             Jacobian += delI * dWdp;
 
@@ -210,7 +221,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         }
         i++;
     }
+
     Hessian = Jacobian * Jacobian.transpose();
+    InverseHessian = Hessian.inverse();
     std::cout << Hessian << std::endl;
 
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
