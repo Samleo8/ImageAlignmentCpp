@@ -1,3 +1,15 @@
+/**
+ * @file ImageAlignment.cpp
+ * @author Samuel Leong (samleocw@gmail.com)
+ * @brief Image Alignment class which implements Baker-Matthews inverse
+ * compositional image alignment
+ *
+ * @version 0.1
+ * @date 2020-12-25
+ *
+ * @copyright Copyright (c) 2020
+ */
+
 #include "ImageAlignment.hpp"
 
 /**
@@ -59,8 +71,6 @@ void ImageAlignment::init(const cv::Mat &aImage, const bbox_t &aBbox) {
     setCurrentImage(aImage);
     setBBOX(aBbox);
 }
-
-// https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga0203d9ee5fcd28d40dbc4a1ea4451983
 
 /**
  * @brief Get BBOX (top, left, bottom, right)
@@ -152,9 +162,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
     cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
-    std::cout << templateImage.size() << "\n";
-    std::cout << bboxSize << bboxCenter << "\n";
-
     // Subpixel crop
     // Get actual template sub image
     cv::Mat templateSubImage; // (bboxSize, CV_64F);
@@ -167,14 +174,25 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Sobel(templateSubImage, templateGradY, CV_32F, 0, 1);
 
     // Precompute Jacobian and Hessian
+    Eigen::VectorXd Jacobian(6) = Eigen::VectorXd::Zero();
+    Eigen::MatrixXd Hessian(6, 6);
+    Eigen::MatrixXd InverseHessian(6, 6);
 
+    // Loop over everything, linearly-spaced
+    size_t i = 0, j = 0;
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
-    for (float y = bbox[1]; x <= bbox[3]; y += deltaY) {
+    for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
 
+            j++;
         }
+        i++;
     }
 
+
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
+
+    // TODO: Warp affine
+    // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga0203d9ee5fcd28d40dbc4a1ea4451983
 }

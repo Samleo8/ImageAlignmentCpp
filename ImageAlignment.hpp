@@ -1,3 +1,15 @@
+/**
+ * @file ImageAlignment.hpp
+ * @author Samuel Leong (samleocw@gmail.com)
+ * @brief Image Alignment class which implements Baker-Matthews inverse
+ * compositional image alignment
+ *
+ * @version 0.1
+ * @date 2020-12-25
+ *
+ * @copyright Copyright (c) 2020
+ */
+
 #ifndef __IMAGE_ALIGNMENT_H__
 #define __IMAGE_ALIGNMENT_H__
 
@@ -5,6 +17,9 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <vector>
+
+/// @brief BBOX Type: Simple TLBR array
+typedef float bbox_t[4];
 
 /**
  * @brief Image Alignment Class
@@ -16,10 +31,6 @@
  * Parent program calls `track()` to track the template image in the next frame
  * Updating the BBOX accordingly
  */
-
-/// @brief BBOX Type: Simple TLBR array
-typedef float bbox_t[4];
-
 class ImageAlignment {
   private:
     /// @brief BBOX of template image (top, left, bottom, right)
