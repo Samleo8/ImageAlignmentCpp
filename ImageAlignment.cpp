@@ -1,6 +1,64 @@
 #include "ImageAlignment.hpp"
 
-ImageAlignment::ImageAlignment(/* args */) {}
+/**
+ * @brief Constructor for ImageAlignment class (empty)
+ */
+ImageAlignment::ImageAlignment() {}
+
+/**
+ * @brief Constructor for ImageAlignment class
+ *
+ * @param[in] aImage Initial current image
+ */
+ImageAlignment(cv::Mat &aImage) {
+    init(aImage);
+}
+
+/**
+ * @brief Constructor for ImageAlignment class
+ *
+ * @param[in] aBbox Initial BBOX
+ */
+ImageAlignment(bbox_t &aBbox) {
+    init(aBbox);
+}
+
+/**
+ * @brief Constructor for ImageAlignment class
+ *
+ * @param[in] aImage Initial current image
+ * @param[in] aBbox Initial BBOX
+ */
+ImageAlignment(cv::Mat &aImage, bbox_t &aBbox) {
+    init(aImage, aBbox);
+}
+
+/**
+ * @brief Initialiser
+ * @param[in] aImage Initial current image
+ */
+void ImageAlignment::init(cv::Mat &aImage) {
+    setCurrentImage(aImage);
+}
+
+/**
+ * @brief Initialiser
+ * @param[in] aBbox Initial BBOX
+ */
+void ImageAlignment::init(bbox_t &aBbox) {
+    setBBOX(aBbox);
+}
+
+/**
+ * @brief Initialiser
+ *
+ * @param[in] aImage Initial current image
+ * @param[in] aBbox Initial BBOX
+ */
+void ImageAlignment::init(cv::Mat &aImage, bbox_t &aBbox) {
+    setCurrentImage(aImage);
+    setBBOX(aBbox);
+}
 
 // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga0203d9ee5fcd28d40dbc4a1ea4451983
 
@@ -18,7 +76,7 @@ bbox_t &ImageAlignment::getBBOX() {
  *
  * @param[in] aBbox BBOX
  */
-void ImageAlignment::setBBOX(bbox_t aBbox) {
+void ImageAlignment::setBBOX(bbox_t &aBbox) {
     for (int i = 0; i < 4; i++)
         mBbox[i] = aBbox[i];
 }
@@ -79,8 +137,7 @@ void ImageAlignment::setCurrentImage(cv::Mat &aImg) {
  * @param[in] aThreshold Threshold to compare against
  * @param[in] aMaxIters
  */
-void ImageAlignment::track(cv::Mat &aNewImage,
-                           float aThreshold = 0.01875,
+void ImageAlignment::track(cv::Mat &aNewImage, float aThreshold = 0.01875,
                            unsigned int aMaxIters = 100) {
     // Set new images
     //  - "Current" image becomes template
@@ -97,8 +154,8 @@ void ImageAlignment::track(cv::Mat &aNewImage,
 
     // Subpixel crop
     // Get actual template
-    cv::Mat template;
-    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, template);
+    cv::Mat template(bboxSize, CV_64F);
+    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, template, CV_64F);
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
@@ -111,6 +168,4 @@ void ImageAlignment::track(cv::Mat &aNewImage,
     // Precompute Jacobian and Hessian
 
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
-
-
 }

@@ -32,12 +32,22 @@ class ImageAlignment {
     cv::Mat mCurrentImage;
 
   public:
-    ImageAlignment(/* args */);
+    // Constructor, destructor
+    ImageAlignment();
+    ImageAlignment(cv::Mat &aImage);
+    ImageAlignment(bbox_t &aBbox);
+    ImageAlignment(cv::Mat &aImage, bbox_t &aBbox);
+
     ~ImageAlignment();
+
+    // Init
+    void init(cv::Mat &aImage);
+    void init(bbox_t &aBbox);
+    void init(cv::Mat &aImage, bbox_t &aBbox);
 
     // BBOX Interface
     bbox_t &getBBOX();
-    void setBBOX(bbox_t aBbox);
+    void setBBOX(bbox_t &aBbox);
     void setBBOX(float aTop, float aLeft, float aBottom, float aRight);
 
     // Get and Set Images
