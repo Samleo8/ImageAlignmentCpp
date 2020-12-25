@@ -170,13 +170,27 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
-    cv::Sobel(templateSubImage, templateGradX, CV_32F, 1, 0);
-    cv::Sobel(templateSubImage, templateGradY, CV_32F, 0, 1);
+    cv::Sobel(templateImage, templateGradX, CV_32F, 1, 0);
+    cv::Sobel(templateImage, templateGradY, CV_32F, 0, 1);
 
-    // Precompute Jacobian and Hessian
-    Eigen::VectorXd Jacobian(6) = Eigen::VectorXd::Zero();
+    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
+                      CV_32F);
+
+    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
+                      CV_32F);
+
+    /* Precompute Jacobian and Hessian */
+    // Initialise matrices
+    Eigen::VectorXd Jacobian(6);
     Eigen::MatrixXd Hessian(6, 6);
     Eigen::MatrixXd InverseHessian(6, 6);
+
+    Eigen::MatrixXd dWdp(2, 6);
+    Eigen::RowVector2d delI(2);
+
+    Jacobian.setZero();
+
+    std::cout << templateSubImage << std::endl;
 
     // Loop over everything, linearly-spaced
     size_t i = 0, j = 0;
@@ -184,12 +198,20 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     float deltaY = bboxSize.height / int(bboxSize.height);
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
+            // Create dWdp matrix
+            dWdp << x, 0, y, 0, 1, 0, 0, x, 0, y, 0, 1;
+
+            delI << templateGradX.at<double>(i, j),
+                templateGradY.at<double>(i, j);
+
+            Jacobian += delI * dWdp;
 
             j++;
         }
         i++;
     }
-
+    Hessian = Jacobian * Jacobian.transpose();
+    std::cout << Hessian << std::endl;
 
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
 
