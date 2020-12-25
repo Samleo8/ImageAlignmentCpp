@@ -34,32 +34,32 @@ class ImageAlignment {
   public:
     // Constructor, destructor
     ImageAlignment();
-    ImageAlignment(cv::Mat &aImage);
-    ImageAlignment(bbox_t &aBbox);
-    ImageAlignment(cv::Mat &aImage, bbox_t &aBbox);
+    ImageAlignment(const cv::Mat &aImage);
+    ImageAlignment(const bbox_t &aBbox);
+    ImageAlignment(const cv::Mat &aImage, const bbox_t &aBbox);
 
     ~ImageAlignment();
 
     // Init
-    void init(cv::Mat &aImage);
-    void init(bbox_t &aBbox);
-    void init(cv::Mat &aImage, bbox_t &aBbox);
+    void init(const cv::Mat &aImage);
+    void init(const bbox_t &aBbox);
+    void init(const cv::Mat &aImage, const bbox_t &aBbox);
 
     // BBOX Interface
     bbox_t &getBBOX();
     void setBBOX(bbox_t &aBbox);
-    void setBBOX(float aTop, float aLeft, float aBottom, float aRight);
+    void setBBOX(const float aTop, const float aLeft, const float aBottom, const float aRight);
 
     // Get and Set Images
     cv::Mat &getTemplateImage();
-    void setTemplateImage(cv::Mat &aImg);
+    void setTemplateImage(const cv::Mat &aImg);
 
     cv::Mat &getCurrentImage();
-    void setCurrentImage(cv::Mat &aImg);
+    void setCurrentImage(const cv::Mat &aImg);
 
     // Track
-    void track(cv::Mat &aNewImage, float aThreshold,
-               unsigned int aMaxIters);
+    void track(const cv::Mat &aNewImage, const float aThreshold,
+               const unsigned int aMaxIters);
 };
 
 #endif

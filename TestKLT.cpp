@@ -18,7 +18,7 @@ void getImagePath(fs::path &imageFolder, unsigned int imageCnt,
 }
 
 int main(int argc, char *argv[]) {
-    ImageAlignment &track();
+    ImageAlignment tracker();
 
     std::string imageSequence(
         (argc > 1) ? std::string(argv[1]) : "landing"
@@ -33,15 +33,15 @@ int main(int argc, char *argv[]) {
 
     std::string imageSuffix = ".jpg";
     
-    unsigned int imageCnt;
+    unsigned int imageCnt = startCnt;
 
-    // Previous Frame image        
-    
+    // Previous Frame image
+    fs::path imagePath;
+    getImagePath(imageFolder, imageCnt, imageSuffix, imagePath);
+    cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
 
     // Loop through image frames
     for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
-        fs::path imagePath;
-
         getImagePath(imageFolder, imageCnt, imageSuffix, imagePath);
 
         std::cout << imagePath.string() << std::endl;

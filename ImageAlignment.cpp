@@ -10,7 +10,7 @@ ImageAlignment::ImageAlignment() {}
  *
  * @param[in] aImage Initial current image
  */
-ImageAlignment::ImageAlignment(cv::Mat &aImage) {
+ImageAlignment::ImageAlignment(const cv::Mat &aImage) {
     init(aImage);
 }
 
@@ -19,7 +19,7 @@ ImageAlignment::ImageAlignment(cv::Mat &aImage) {
  *
  * @param[in] aBbox Initial BBOX
  */
-ImageAlignment::ImageAlignment(bbox_t &aBbox) {
+ImageAlignment::ImageAlignment(const bbox_t &aBbox) {
     init(aBbox);
 }
 
@@ -29,7 +29,7 @@ ImageAlignment::ImageAlignment(bbox_t &aBbox) {
  * @param[in] aImage Initial current image
  * @param[in] aBbox Initial BBOX
  */
-ImageAlignment::ImageAlignment(cv::Mat &aImage, bbox_t &aBbox) {
+ImageAlignment::ImageAlignment(const cv::Mat &aImage, const bbox_t &aBbox) {
     init(aImage, aBbox);
 }
 
@@ -37,7 +37,7 @@ ImageAlignment::ImageAlignment(cv::Mat &aImage, bbox_t &aBbox) {
  * @brief Initialiser
  * @param[in] aImage Initial current image
  */
-void ImageAlignment::init(cv::Mat &aImage) {
+void ImageAlignment::init(const cv::Mat &aImage) {
     setCurrentImage(aImage);
 }
 
@@ -45,7 +45,7 @@ void ImageAlignment::init(cv::Mat &aImage) {
  * @brief Initialiser
  * @param[in] aBbox Initial BBOX
  */
-void ImageAlignment::init(bbox_t &aBbox) {
+void ImageAlignment::init(const bbox_t &aBbox) {
     setBBOX(aBbox);
 }
 
@@ -55,7 +55,7 @@ void ImageAlignment::init(bbox_t &aBbox) {
  * @param[in] aImage Initial current image
  * @param[in] aBbox Initial BBOX
  */
-void ImageAlignment::init(cv::Mat &aImage, bbox_t &aBbox) {
+void ImageAlignment::init(const cv::Mat &aImage, const bbox_t &aBbox) {
     setCurrentImage(aImage);
     setBBOX(aBbox);
 }
@@ -76,7 +76,7 @@ bbox_t &ImageAlignment::getBBOX() {
  *
  * @param[in] aBbox BBOX
  */
-void ImageAlignment::setBBOX(bbox_t &aBbox) {
+void ImageAlignment::setBBOX(const bbox_t &aBbox) {
     for (int i = 0; i < 4; i++)
         mBbox[i] = aBbox[i];
 }
@@ -89,8 +89,8 @@ void ImageAlignment::setBBOX(bbox_t &aBbox) {
  * @param[in] aBottom Bottom of BBOX
  * @param[in] aRight Right of BBOX
  */
-void ImageAlignment::setBBOX(float aTop, float aLeft, float aBottom,
-                             float aRight) {
+void ImageAlignment::setBBOX(const float aTop, const float aLeft,
+                             const float aBottom, const float aRight) {
     mBbox[0] = aTop;
     mBbox[1] = aLeft;
     mBbox[2] = aBottom;
@@ -108,7 +108,7 @@ cv::Mat &ImageAlignment::getTemplateImage() {
  * @brief Set template image
  * @param[in] aImg Template image
  */
-void ImageAlignment::setTemplateImage(cv::Mat &aImg) {
+void ImageAlignment::setTemplateImage(const cv::Mat &aImg) {
     mTemplateImage = aImg;
 }
 
@@ -123,7 +123,7 @@ cv::Mat &ImageAlignment::getCurrentImage() {
  * @brief Set current image
  * @param[in] aImg Current image
  */
-void ImageAlignment::setCurrentImage(cv::Mat &aImg) {
+void ImageAlignment::setCurrentImage(const cv::Mat &aImg) {
     mTemplateImage = aImg;
 }
 
@@ -137,8 +137,8 @@ void ImageAlignment::setCurrentImage(cv::Mat &aImg) {
  * @param[in] aThreshold Threshold to compare against
  * @param[in] aMaxIters
  */
-void ImageAlignment::track(cv::Mat &aNewImage, float aThreshold = 0.01875,
-                           unsigned int aMaxIters = 100) {
+void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
+                           const unsigned int aMaxIters = 100) {
     // Set new images
     //  - "Current" image becomes template
     //  - New image becomes current image
