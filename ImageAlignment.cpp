@@ -26,7 +26,7 @@ void ImageAlignment::setBBOX(bbox_t aBbox) {
 /**
  * @brief Set BBOX (top, left, bottom, right)
  *
- * @param[in] aTop Top of BBOX 
+ * @param[in] aTop Top of BBOX
  * @param[in] aLeft Left of BBOX
  * @param[in] aBottom Bottom of BBOX
  * @param[in] aRight Right of BBOX
@@ -34,7 +34,7 @@ void ImageAlignment::setBBOX(bbox_t aBbox) {
 void ImageAlignment::setBBOX(float aTop, float aLeft, float aBottom,
                              float aRight) {
     mBbox[0] = aTop;
-    mBbox[1] = aLeft; 
+    mBbox[1] = aLeft;
     mBbox[2] = aBottom;
     mBbox[3] = aRight;
 }
@@ -70,11 +70,35 @@ void &ImageAlignment::setTemplateImage(cv::Mat &aImg) {
 }
 
 /**
- * @brief Using the iteratively saved BBOX, get template from "current" frame 
+ * @brief Using the iteratively saved BBOX, get template from "current" frame
  * (which is the previous frame) and perform Baker-Matthews IC image alignment:
  *
  * Proceed to update new bbox (detection) accordingly
- * 
- * @param[in] newImage 
+ *
+ * @param[in] aNewImage New image to track in
+ * @param[in] aThreshold Threshold to compare against
+ * @param[in] aMaxIters
  */
-void ImageAlignment::track(cv::Mat &newImage);
+void ImageAlignment::track(cv::Mat &aNewImage,
+                           unsigned float aThreshold = 0.01875,
+                           unsigned int aMaxIters = 100) {
+    // Set new images
+    //  - "Current" image becomes template
+    //  - New image becomes current image
+    cv::Mat &templateImage = getCurrentImage();
+    setTemplateImage(templateImage);
+    setTemplateImage(aNewImage);
+
+    // Get BBOX
+    bbox_t bbox = getBBOX();
+    int nX = bbox[2] - bbox[0];
+    int nY = bbox[3] - bbox[1];
+
+    // Subpixel crop
+    // Get actual template
+    cv::Mat template;
+    cv::Size2d patchSize();
+    cv::getRectSubPix(templateImage, patchSize, , template);
+
+        Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
+}

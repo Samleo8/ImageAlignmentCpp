@@ -47,7 +47,8 @@ class ImageAlignment {
     void setCurrImage(cv::Mat &aImg);
 
     // Track
-    void track(cv::Mat &newImage);
+    void track(cv::Mat &aNewImage, unsigned float aThreshold,
+               unsigned int aMaxIters);
 };
 
 #endif
