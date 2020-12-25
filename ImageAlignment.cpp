@@ -91,14 +91,13 @@ void ImageAlignment::track(cv::Mat &aNewImage,
 
     // Get BBOX
     bbox_t bbox = getBBOX();
-    int nX = bbox[2] - bbox[0];
-    int nY = bbox[3] - bbox[1];
+    cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
     // Subpixel crop
     // Get actual template
     cv::Mat template;
-    cv::Size2d patchSize();
-    cv::getRectSubPix(templateImage, patchSize, , template);
+    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, template);
 
-        Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
+    Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
 }
