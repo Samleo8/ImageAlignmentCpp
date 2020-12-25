@@ -137,8 +137,8 @@ void ImageAlignment::setCurrentImage(const cv::Mat &aImg) {
  * @param[in] aThreshold Threshold to compare against
  * @param[in] aMaxIters
  */
-void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
-                           const unsigned int aMaxIters = 100) {
+void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
+                           const unsigned int aMaxIters) {
     // Set new images
     //  - "Current" image becomes template
     //  - New image becomes current image

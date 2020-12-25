@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
     ImageAlignment tracker(image);
     
     // Landing scene test
-    tracker.setBBOX(440.0, 80.0, 560.0, 140.0);
+    tracker.setBBOX(440.0f, 80.0f, 560.0f, 140.0f);
 
     // Loop through image frames
     for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
@@ -51,6 +51,8 @@ int main(int argc, char *argv[]) {
 
         cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
         
+        tracker.track(image);
+
         cv::imshow("Image", image);
         char c = cv::waitKey(0);
         if (c == 'q') {

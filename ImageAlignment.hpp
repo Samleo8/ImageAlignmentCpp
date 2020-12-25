@@ -1,8 +1,8 @@
 #ifndef __IMAGE_ALIGNMENT_H__
 #define __IMAGE_ALIGNMENT_H__
 
-#include <iostream>
 #include <Eigen/Dense>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <vector>
 
@@ -46,7 +46,8 @@ class ImageAlignment {
     // BBOX Interface
     bbox_t &getBBOX();
     void setBBOX(const bbox_t &aBbox);
-    void setBBOX(const float aTop, const float aLeft, const float aBottom, const float aRight);
+    void setBBOX(const float aTop, const float aLeft, const float aBottom,
+                 const float aRight);
 
     // Get and Set Images
     cv::Mat &getTemplateImage();
@@ -56,8 +57,8 @@ class ImageAlignment {
     void setCurrentImage(const cv::Mat &aImg);
 
     // Track
-    void track(const cv::Mat &aNewImage, const float aThreshold,
-               const unsigned int aMaxIters);
+    void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
+               const unsigned int aMaxIters = 100);
 };
 
 #endif
