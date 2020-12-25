@@ -18,8 +18,6 @@ void getImagePath(fs::path &imageFolder, unsigned int imageCnt,
 }
 
 int main(int argc, char *argv[]) {
-    ImageAlignment tracker();
-
     std::string imageSequence(
         (argc > 1) ? std::string(argv[1]) : "landing"
     );
@@ -39,6 +37,11 @@ int main(int argc, char *argv[]) {
     fs::path imagePath;
     getImagePath(imageFolder, imageCnt, imageSuffix, imagePath);
     cv::Mat image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
+
+    ImageAlignment tracker(image);
+    
+    // Landing scene test
+    tracker.setBBOX(440.0, 80.0, 560.0, 140.0);
 
     // Loop through image frames
     for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
