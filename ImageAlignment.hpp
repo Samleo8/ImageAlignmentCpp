@@ -26,14 +26,14 @@ class ImageAlignment {
     bbox_t mBbox;
 
     /// @brief Template Image (previous frame)
-    cv::Mat &mTemplateImage;
+    cv::Mat mTemplateImage;
 
     /// @brief Current Image (current frame)
-    cv::Mat &mCurrentImage;
+    cv::Mat mCurrentImage;
 
   public:
-    KLTTracker(/* args */);
-    ~KLTTracker();
+    ImageAlignment(/* args */);
+    ~ImageAlignment();
 
     // BBOX Interface
     bbox_t &getBBOX();
@@ -44,11 +44,11 @@ class ImageAlignment {
     cv::Mat &getTemplateImage();
     void setTemplateImage(cv::Mat &aImg);
 
-    cv::Mat &getCurrImage();
-    void setCurrImage(cv::Mat &aImg);
+    cv::Mat &getCurrentImage();
+    void setCurrentImage(cv::Mat &aImg);
 
     // Track
-    void track(cv::Mat &aNewImage, unsigned float aThreshold,
+    void track(cv::Mat &aNewImage, float aThreshold,
                unsigned int aMaxIters);
 };
 

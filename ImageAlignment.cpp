@@ -50,7 +50,7 @@ cv::Mat &ImageAlignment::getTemplateImage() {
  * @brief Set template image
  * @param[in] aImg Template image
  */
-void &ImageAlignment::setTemplateImage(cv::Mat &aImg) {
+void ImageAlignment::setTemplateImage(cv::Mat &aImg) {
     mTemplateImage = aImg;
 }
 
@@ -65,7 +65,7 @@ cv::Mat &ImageAlignment::getCurrentImage() {
  * @brief Set current image
  * @param[in] aImg Current image
  */
-void &ImageAlignment::setTemplateImage(cv::Mat &aImg) {
+void ImageAlignment::setCurrentImage(cv::Mat &aImg) {
     mTemplateImage = aImg;
 }
 
@@ -80,7 +80,7 @@ void &ImageAlignment::setTemplateImage(cv::Mat &aImg) {
  * @param[in] aMaxIters
  */
 void ImageAlignment::track(cv::Mat &aNewImage,
-                           unsigned float aThreshold = 0.01875,
+                           float aThreshold = 0.01875,
                            unsigned int aMaxIters = 100) {
     // Set new images
     //  - "Current" image becomes template
@@ -90,7 +90,8 @@ void ImageAlignment::track(cv::Mat &aNewImage,
     setTemplateImage(aNewImage);
 
     // Get BBOX
-    bbox_t bbox = getBBOX();
+    // bbox_t &bbox = getBBOX();
+    bbox_t &bbox = mBbox;
     cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
     cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
@@ -101,8 +102,8 @@ void ImageAlignment::track(cv::Mat &aNewImage,
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
-    cv::Sobel(template, templateGradX, cv::CV_64F, 1, 0);
-    cv::Sobel(template, templateGradY, cv::CV_64F, 0, 1);
+    cv::Sobel(template, templateGradX, CV_64F, 1, 0);
+    cv::Sobel(template, templateGradY, CV_64F, 0, 1);
 
     std::cout << "T_X\n" << templateGradX << std::endl;
     std::cout << "T_Y\n" << templateGradY << std::endl;
