@@ -10,7 +10,7 @@ ImageAlignment::ImageAlignment() {}
  *
  * @param[in] aImage Initial current image
  */
-ImageAlignment(cv::Mat &aImage) {
+ImageAlignment::ImageAlignment(cv::Mat &aImage) {
     init(aImage);
 }
 
@@ -19,7 +19,7 @@ ImageAlignment(cv::Mat &aImage) {
  *
  * @param[in] aBbox Initial BBOX
  */
-ImageAlignment(bbox_t &aBbox) {
+ImageAlignment::ImageAlignment(bbox_t &aBbox) {
     init(aBbox);
 }
 
@@ -29,7 +29,7 @@ ImageAlignment(bbox_t &aBbox) {
  * @param[in] aImage Initial current image
  * @param[in] aBbox Initial BBOX
  */
-ImageAlignment(cv::Mat &aImage, bbox_t &aBbox) {
+ImageAlignment::ImageAlignment(cv::Mat &aImage, bbox_t &aBbox) {
     init(aImage, aBbox);
 }
 
@@ -153,14 +153,15 @@ void ImageAlignment::track(cv::Mat &aNewImage, float aThreshold = 0.01875,
     cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
     // Subpixel crop
-    // Get actual template
-    cv::Mat template(bboxSize, CV_64F);
-    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, template, CV_64F);
+    // Get actual template sub image
+    cv::Mat templateSubImage(bboxSize, CV_64F);
+    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, templateSubImage,
+                      CV_64F);
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
-    cv::Sobel(template, templateGradX, CV_64F, 1, 0);
-    cv::Sobel(template, templateGradY, CV_64F, 0, 1);
+    cv::Sobel(templateSubImage, templateGradX, CV_64F, 1, 0);
+    cv::Sobel(templateSubImage, templateGradY, CV_64F, 0, 1);
 
     std::cout << "T_X\n" << templateGradX << std::endl;
     std::cout << "T_Y\n" << templateGradY << std::endl;
