@@ -181,7 +181,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     //  - New image becomes current image
     const cv::Mat &templateImage = getCurrentImage();
     const cv::Mat &currentImage = aNewImage;
+
     const cv::Size2d IMAGE_SIZE = currentImage.size();
+    const size_t N_PIXELS = IMAGE_SIZE.width * IMAGE_SIZE.height;
 
     setTemplateImage(templateImage);
     setCurrentImage(currentImage);
@@ -245,28 +247,36 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         i++;
     }
 
-    const Eigen::Matrix<float, 6, 1> JacobianTransposed = Jacobian.transpose();
+    const Eigen::Matrix<float, 1, 6> JacobianTransposed = Jacobian.transpose();
     const Eigen::Matrix<float, 6, 6> Hessian = Jacobian * JacobianTransposed;
     const Eigen::Matrix<float, 6, 6> HessianInverse = Hessian.inverse();
 
     /* Iteratively find best match */
-    Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
+    Eigen::Matrix3f warpMat = Eigen::Matrix3f::Identity();
 
-    // TODO: Find a way to alias the top 2 rows
-    // const Eigen::Matrix<double, 2, 3> (&warpMatTrunc)(warpMat.topRows(2));
+    // Alias the top 2 rows
+    auto warpMatTrunc = warpMat.topRows(2);
 
     cv::Mat warpedImage;
     cv::Mat warpMatCV(2, 3, CV_32FC1);
-    Eigen::Matrix<float, 2, 3> warpMatTrunc;
+    // Eigen::Matrix<float, 2, 3> warpMatTrunc;
+
+    Eigen::VectorXf errorVector(N_PIXELS);
+    Eigen::MatrixXf warpedImageFlat;
 
     for (size_t i = 0; i < aMaxIters; i++) {
-        // warpMat += Eigen::Matrix3d::Identity();
-        warpMatTrunc = warpMat.topRows(2);
-        cv::eigen2cv(warpMatTrunc, warpMatCV);
+        // warpMat += Eigen::Matrix3f::Identity();
+        // std::cout << warpMatTrunc << std::endl;
+
+        cv::eigen2cv(static_cast<Eigen::Matrix<float, 2, 3>>(warpMatTrunc),
+                     warpMatCV);
 
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
+        cv::cv2eigen(warpedImage, warpedImageFlat);
+        warpedImageFlat.resize(N_PIXELS, 1);
 
+        // cv::imshow("warped", warpedImage);
     }
 
     // TODO: Warp affine
