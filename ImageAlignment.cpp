@@ -223,6 +223,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
 
+
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
@@ -282,7 +283,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
-        cv::cv2eigen(templateSubImage - warpedSubImage, errorVector);
+        cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
 
         // Weight for robust M-estimator
@@ -297,11 +298,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         deltaP = Hessian.ldlt().solve(vectorB);
 
         // Reshape data in order to inverse matrix
-        Eigen::VectorXd deltaPHomo(9);
+        Eigen::Matrix3d warpMatDelta;
 
-        deltaPHomo << deltaP, 0, 0, 1;
-
-        Eigen::Map<Eigen::Matrix3d> warpMatDelta(deltaPHomo.data(), 3, 3);
+        warpMatDelta << 1.0 + deltaP(0), deltaP(2), deltaP(4), //
+            deltaP(1), 1.0 + deltaP(3), deltaP(5),             //
+            0, 0, 1;
 
         Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
 
@@ -322,5 +323,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         1, 1;
 
     Eigen::MatrixXd newBBOXHomo = warpMat * bboxMat;
-    std::cout << newBBOXHomo << std::endl;
+
+    std::cout << "bbox:" << newBBOXHomo << std::endl;
+    setBBOX(newBBOXHomo(0, 0), newBBOXHomo(1, 0), newBBOXHomo(0, 1),
+            newBBOXHomo(1, 1));
+
+    std::cout << "bbox 2:" << getBBOX() << std::endl;
 }
