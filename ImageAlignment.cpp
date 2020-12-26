@@ -296,17 +296,19 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
+        std::cout << "deltaP" << deltaP << std::endl;
+        std::cout << "Hessian" << Hessian << "HessianInverse" << Hessian.inverse()
+                  << std::endl;
 
         // Reshape data in order to inverse matrix
         Eigen::Matrix3d warpMatDelta;
 
-        warpMatDelta << 1.0 + deltaP(0), deltaP(2), deltaP(4), //
-            deltaP(1), 1.0 + deltaP(3), deltaP(5),             //
+        warpMatDelta << 1 + deltaP(0), deltaP(2), deltaP(4), //
+            deltaP(1), 1 + deltaP(3), deltaP(5),             //
             0, 0, 1;
 
         Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
-
-        std::cout << deltaP << std::endl << warpMatDeltaInverse << std::endl;
+        std::cout << "deltaInverse" << warpMatDeltaInverse << std::endl;
 
         warpMat *= warpMatDeltaInverse;
 
@@ -327,6 +329,4 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     std::cout << "bbox:" << newBBOXHomo << std::endl;
     setBBOX(newBBOXHomo(0, 0), newBBOXHomo(1, 0), newBBOXHomo(0, 1),
             newBBOXHomo(1, 1));
-
-    std::cout << "bbox 2:" << getBBOX() << std::endl;
 }
