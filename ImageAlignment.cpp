@@ -213,8 +213,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Precompute Jacobian and Hessian */
     // Initialise matrices
     Eigen::MatrixXf Jacobian(N_PIXELS, 6);
-    Eigen::Matrix<float, 6, 6> Hessian, HessianInverse;
-
     Eigen::MatrixXf dWdp(2, 6);
     Eigen::RowVector2f delI(2);
 
@@ -270,7 +268,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::DiagonalMatrix<float, Eigen::Dynamic> weights;
 
     // Delta P vector
-    Eigen::VectorXf deltaP(6);
+    Eigen::MatrixXf deltaP;
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // warpMat += Eigen::Matrix3f::Identity();
@@ -295,14 +293,17 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // TODO: Use actual weights, dummy identity for now
         weights.setIdentity(N_PIXELS);
 
-        Hessian = JacobianTransposed * weights * Jacobian;
-        HessianInverse = Hessian.inverse();
+        const Eigen::MatrixXf weightedJTrans = JacobianTransposed * weights;
+        const Eigen::Matrix<float, 6, 6> Hessian = weightedJTrans * Jacobian;
+        // HessianInverse = Hessian.inverse();
+        const Eigen::VectorXf vectorB = weightedJTrans * errorVector;
 
         // Solve for new deltaP
-        deltaP = HessianInverse * JacobianTransposed * weights * errorVector;
+        deltaP = Hessian.ldlt().solve(vectorB);
 
         // std::cout << deltaP << std::endl;
         // cv::imshow("warped", warpedImage);
+        continue;
     }
 
     // TODO: Warp affine

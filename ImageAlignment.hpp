@@ -13,8 +13,7 @@
 #ifndef __IMAGE_ALIGNMENT_H__
 #define __IMAGE_ALIGNMENT_H__
 
-#include <Eigen/Core>
-#include <Eigen/LU>
+#include <Eigen/Dense>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
