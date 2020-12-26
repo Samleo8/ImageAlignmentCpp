@@ -288,7 +288,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // TODO: Use actual weights, dummy identity for now
         weights.setIdentity(N_PIXELS);
 
-        const Eigen::MatrixXd weightedJTrans = JacobianTransposed; // * weights;
+        const Eigen::MatrixXd weightedJTrans = JacobianTransposed * weights;
         const Eigen::MatrixXd Hessian = weightedJTrans * Jacobian;
         const Eigen::VectorXd vectorB = weightedJTrans * errorVector;
 
@@ -298,13 +298,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Reshape data in order to inverse matrix
         Eigen::VectorXd deltaPHomo(9);
 
-        std::cout << Hessian << Hessian.inverse() << std::endl;
-
         deltaPHomo << deltaP, 0, 0, 1;
 
         Eigen::Map<Eigen::Matrix3d> warpMatDelta(deltaPHomo.data(), 3, 3);
-
-        std::cout << warpMatDelta << std::endl;
 
         break;
     }
