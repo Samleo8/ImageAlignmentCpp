@@ -294,8 +294,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         weights.setIdentity(N_PIXELS);
 
         const Eigen::MatrixXf weightedJTrans = JacobianTransposed * weights;
-        const Eigen::Matrix<float, 6, 6> Hessian = weightedJTrans * Jacobian;
-        // HessianInverse = Hessian.inverse();
+        const Eigen::MatrixXf Hessian = weightedJTrans * Jacobian;
         const Eigen::VectorXf vectorB = weightedJTrans * errorVector;
 
         // Solve for new deltaP
@@ -303,7 +302,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // std::cout << deltaP << std::endl;
         // cv::imshow("warped", warpedImage);
-        continue;
+        break;
     }
 
     // TODO: Warp affine
