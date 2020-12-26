@@ -227,7 +227,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
             // Create dWdp matrix
-            dWdp << x, 0, y, 0, 1, 0, 0, x, 0, y, 0, 1;
+            dWdp << x, 0, y, 0, 1, 0, //
+                0, x, 0, y, 0, 1;
 
             float delIx = templateGradX.at<float>(i, j);
             float delIy = templateGradY.at<float>(i, j);
@@ -302,9 +303,19 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         Eigen::Map<Eigen::Matrix3d> warpMatDelta(deltaPHomo.data(), 3, 3);
 
-        break;
+        Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
+
+        warpMat *= warpMatDeltaInverse;
+
+        if (deltaP.norm() < aThreshold) {
+            break;
+        }
     }
 
-    // TODO: Warp affine
-    // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga0203d9ee5fcd28d40dbc4a1ea4451983
+    // Update new BBOX
+    Eigen::MatrixXd bboxHomo(2, 3);
+    bboxHomo << bbox[0], bbox[1], 1, //
+        bbox[2], bbox[3], 1;
+
+    
 }
