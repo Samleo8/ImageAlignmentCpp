@@ -210,8 +210,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
                       CV_32F);
 
     /* Precompute Jacobian and Hessian */
-    // NOTE: BBOX SIZE!
-    const size_t N_PIXELS = bboxSize.width * bboxSize.height;
+    // NOTE: This is the BBOX size; also note the need to add 1
+    const size_t N_PIXELS = (bboxSize.width + 1) * (bboxSize.height + 1) + 1;
 
     // Initialise matrices
     Eigen::MatrixXf Jacobian(N_PIXELS, 6);
@@ -222,6 +222,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     size_t i = 0, j = 0, total = 0;
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
+
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
@@ -233,15 +234,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
             delI << delIx, delIy;
 
-            // if (delI.coeff(0, 0) != 0) {
-            //     std::cout << delIx << "," << delIy << std::endl;
-
-            //     std::cout << delI << std::endl;
-            //     std::cout << dWdp << std::endl;
-            //     std::cout << delI * dWdp << std::endl << std::endl;
-            // }
-
-            // Jacobian.row(total) = delI * dWdp;
+            Jacobian.row(total) << delI * dWdp;
 
             j++;
             total++;
@@ -301,9 +294,15 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
+        std::cout << deltaP << std::endl;
 
-        // std::cout << deltaP << std::endl;
-        // cv::imshow("warped", warpedImage);
+        // Copy over data in order to inverse matrix
+        Eigen::VectorXf warpMatDelta(9);
+
+        warpMatDelta << deltaP, 0, 0, 1;
+
+        std::cout << warpMatDelta << std::endl;
+
         break;
     }
 
