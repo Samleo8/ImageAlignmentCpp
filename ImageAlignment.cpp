@@ -194,20 +194,20 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Subpixel crop
     // Get actual template sub image
-    cv::Mat templateSubImage; // (bboxSize, CV_64F);
-    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, templateSubImage,
-                      CV_32F);
+    cv::Mat templateSubImage;
+    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, templateSubImage);
+
+    std::cout << "depth " << templateSubImage.depth() << std::endl;
+    return;
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
-    cv::Sobel(templateImage, templateGradX, CV_32F, 1, 0);
-    cv::Sobel(templateImage, templateGradY, CV_32F, 0, 1);
+    cv::Sobel(templateImage, templateGradX, CV_16S, 1, 0);
+    cv::Sobel(templateImage, templateGradY, CV_16S, 0, 1);
 
-    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
-                      CV_32F);
+    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX);
 
-    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
-                      CV_32F);
+    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY);
 
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
@@ -266,6 +266,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Delta P vector
     Eigen::VectorXd deltaP(6);
+
+    std::cout << Jacobian << "\n\n"; return;
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // warpMat += Eigen::Matrix3f::Identity();
