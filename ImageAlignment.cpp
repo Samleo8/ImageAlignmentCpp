@@ -138,6 +138,31 @@ void ImageAlignment::setCurrentImage(const cv::Mat &aImg) {
 }
 
 /**
+ * @brief Display current image (using OpenCV) with or without BBOX
+ * @note Does not wait for keypress (ie. does NOT run waitKey()); must do that
+ * yourself
+ * @param[in] aWithBBOX Choose whether to display with BBOX or not
+ * @param[in] aTitle Title of image window 
+ * @param[in] aBBOXColour Colour of bounding box
+ */
+void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
+                                         const std::string &aTitle,
+                                         const cv::Scalar &aBBOXColour) {
+    cv::Mat disImg(getCurrentImage());
+
+    // Draw BBOX
+    if (aWithBBOX) {
+        bbox_t &bbox = getBBOX();
+        cv::Point2f topPt(bbox[0], bbox[1]);
+        cv::Point2f bottomPt(bbox[2], bbox[3]);
+
+        cv::rectangle(disImg, topPt, bottomPt, aBBOXColour);
+    }
+
+    cv::imshow(aTitle, disImg);
+}
+
+/**
  * @brief Using the iteratively saved BBOX, get template from "current" frame
  * (which is the previous frame) and perform Baker-Matthews IC image alignment:
  *
@@ -157,8 +182,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     setCurrentImage(aNewImage);
 
     // Get BBOX
-    // bbox_t &bbox = getBBOX();
-    bbox_t &bbox = mBbox;
+    bbox_t &bbox = getBBOX();
     cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
     cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
@@ -207,7 +231,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
             delI << delIx, delIy;
 
-            if (delI.coeff(0,0) != 0) {
+            if (delI.coeff(0, 0) != 0) {
                 std::cout << delIx << "," << delIy << std::endl;
 
                 std::cout << delI << std::endl;

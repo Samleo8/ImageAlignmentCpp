@@ -68,6 +68,12 @@ class ImageAlignment {
     cv::Mat &getCurrentImage();
     void setCurrentImage(const cv::Mat &aImg);
 
+    // Display with (or without) BBOX
+    void displayCurrentImage(const bool aWithBBOX = true,
+                             const std::string &aTitle = "Current Image",
+                             const cv::Scalar &aBBOXColour = cv::Scalar(0, 0,
+                                                                        255));
+
     // Track
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
                const unsigned int aMaxIters = 100);
