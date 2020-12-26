@@ -8,6 +8,13 @@ namespace fs = std::filesystem;
 
 #include "ImageAlignment.hpp"
 
+void printBBOX(bbox_t bbox){
+    std::cout << "BBOX: ";
+    std::cout << "[" << bbox[0] << ", " << bbox[1] << "] ";
+    std::cout << "[" << bbox[2] << ", " << bbox[3] << "]";
+    std::cout << std::endl;
+}
+
 void getImagePath(fs::path &imageFolder, unsigned int imageCnt,
                   std::string &imageSuffix, fs::path &imagePath) {
     std::stringstream ss;
@@ -56,8 +63,10 @@ int main(int argc, char *argv[]) {
         image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
 
         tracker.track(image);
-
         tracker.displayCurrentImage(true);
+
+        printBBOX(tracker.getBBOX());
+
         char c = cv::waitKey(0);
         if (c == 'q') {
             return 0;
