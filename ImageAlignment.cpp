@@ -212,17 +212,18 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     /* Precompute Jacobian and Hessian */
     // Initialise matrices
-    Eigen::VectorXf Jacobian(6);
+    Eigen::MatrixXf Jacobian(N_PIXELS, 6);
+    Eigen::Matrix<float, 6, 6> Hessian, HessianInverse;
+
     Eigen::MatrixXf dWdp(2, 6);
     Eigen::RowVector2f delI(2);
 
-    Jacobian.setZero();
-
     // Loop over everything, linearly-spaced
-    size_t i = 0, j = 0;
+    size_t i = 0, j = 0, total = 0;
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
+        j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
             // Create dWdp matrix
             dWdp << x, 0, y, 0, 1, 0, 0, x, 0, y, 0, 1;
@@ -240,41 +241,63 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             //     std::cout << delI * dWdp << std::endl << std::endl;
             // }
 
-            Jacobian += delI * dWdp;
+            // Jacobian.row(total) = delI * dWdp;
 
             j++;
+            total++;
         }
         i++;
     }
 
-    const Eigen::Matrix<float, 1, 6> JacobianTransposed = Jacobian.transpose();
-    const Eigen::Matrix<float, 6, 6> Hessian = Jacobian * JacobianTransposed;
-    const Eigen::Matrix<float, 6, 6> HessianInverse = Hessian.inverse();
+    // Cache the transposed matrix
+    Eigen::MatrixXf JacobianTransposed(6, N_PIXELS);
+    JacobianTransposed = Jacobian.transpose();
 
     /* Iteratively find best match */
+    // Warp matrix (affine warp)
     Eigen::Matrix3f warpMat = Eigen::Matrix3f::Identity();
+    auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
-    // Alias the top 2 rows
-    auto warpMatTrunc = warpMat.topRows(2);
-
-    cv::Mat warpedImage;
+    // Warped images
+    cv::Mat warpedImage, warpedSubImage;
     cv::Mat warpMatCV(2, 3, CV_32FC1);
-    // Eigen::Matrix<float, 2, 3> warpMatTrunc;
 
-    Eigen::VectorXf errorVector(N_PIXELS);
-    Eigen::MatrixXf warpedImageFlat;
+    // Error Images
+    cv::Mat errorImage;
+    Eigen::MatrixXf errorVector; // NOTE: dynamic, will flatten later
+
+    // Robust M Estimator Weights
+    Eigen::DiagonalMatrix<float, Eigen::Dynamic> weights;
+
+    // Delta P vector
+    Eigen::VectorXf deltaP(6);
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // warpMat += Eigen::Matrix3f::Identity();
         // std::cout << warpMatTrunc << std::endl;
 
+        // Convert to cv::Mat
         cv::eigen2cv(static_cast<Eigen::Matrix<float, 2, 3>>(warpMatTrunc),
                      warpMatCV);
 
+        // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
+        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage);
 
-        cv::cv2eigen(warpedImage, warpedImageFlat);
-        warpedImageFlat.resize(N_PIXELS, 1);
+        // Obtain errorImage which will then be converted to flattened image
+        // vector
+        cv::Mat errorImage = warpedSubImage - templateSubImage;
+        cv::cv2eigen(errorImage, errorVector);
+        errorVector.resize(N_PIXELS, 1);
+
+        // Weight for robust M-estimator
+        // TODO: Use actual weights, dummy identity for now
+        weights = Eigen::VectorXd::Ones(N_PIXELS).asDiagonal();
+        Hessian = JacobianTransposed * weights * Jacobian;
+        HessianInverse = Hessian.inverse();
+
+        // Solve for new deltaP
+        // deltaP = HessianInverse * JacobianTransposed * weights * errorVector;
 
         // cv::imshow("warped", warpedImage);
     }
