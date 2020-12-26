@@ -218,9 +218,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     Jacobian.setZero();
 
-    std::cout << templateGradX << std::endl;
-    std::cout << templateGradY << std::endl;
-
     // Loop over everything, linearly-spaced
     size_t i = 0, j = 0;
     float deltaX = bboxSize.width / int(bboxSize.width);
@@ -235,13 +232,13 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
             delI << delIx, delIy;
 
-            if (delI.coeff(0, 0) != 0) {
-                std::cout << delIx << "," << delIy << std::endl;
+            // if (delI.coeff(0, 0) != 0) {
+            //     std::cout << delIx << "," << delIy << std::endl;
 
-                std::cout << delI << std::endl;
-                std::cout << dWdp << std::endl;
-                std::cout << delI * dWdp << std::endl << std::endl;
-            }
+            //     std::cout << delI << std::endl;
+            //     std::cout << dWdp << std::endl;
+            //     std::cout << delI * dWdp << std::endl << std::endl;
+            // }
 
             Jacobian += delI * dWdp;
 
@@ -252,7 +249,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     Hessian = Jacobian * Jacobian.transpose();
     InverseHessian = Hessian.inverse();
-    std::cout << Hessian << std::endl;
 
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
 
