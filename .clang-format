@@ -24,8 +24,8 @@ BasedOnStyle:  LLVM
 # Use 4 spaces as our indent width
 IndentWidth:   4
 
-# Reformat lines to be under 80 characters
-ColumnLimit:   80
+# Reformat lines to be under 120 characters
+ColumnLimit:   120
 
 # Do not allow single-line functions (unless empty)
 AllowShortFunctionsOnASingleLine: Empty
