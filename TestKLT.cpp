@@ -18,32 +18,34 @@ void getImagePath(fs::path &imageFolder, unsigned int imageCnt,
 }
 
 int main(int argc, char *argv[]) {
-    std::string imageSequence(
-        (argc > 1) ? std::string(argv[1]) : "landing"
-    );
+    std::string imageSequence((argc > 1) ? std::string(argv[1]) : "landing");
     unsigned int startCnt = (argc > 2) ? atoi(argv[2]) : 0;
     unsigned int endCnt = (argc > 3) ? atoi(argv[3]) : 50;
 
-    std::cout << "Testing on sequence " << imageSequence << " from frames " << startCnt << " to " << endCnt;
+    std::cout << "Testing on sequence " << imageSequence << " from frames "
+              << startCnt << " to " << endCnt << std::endl;
 
     fs::path imageFolder("../data");
     imageFolder /= imageSequence;
 
     std::string imageSuffix = ".jpg";
-    
+
     unsigned int imageCnt = startCnt;
 
     // Previous Frame image
     fs::path imagePath;
     getImagePath(imageFolder, imageCnt, imageSuffix, imagePath);
     cv::Mat image;
-    
+
     image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
 
     ImageAlignment tracker(image);
-    
+
     // Landing scene test
     tracker.setBBOX(440.0f, 80.0f, 560.0f, 140.0f);
+
+    tracker.displayCurrentImage(true);
+    cv::waitKey(0);
 
     // Loop through image frames
     for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
@@ -55,7 +57,7 @@ int main(int argc, char *argv[]) {
 
         tracker.track(image);
 
-        cv::imshow("Image", image);
+        tracker.displayCurrentImage(true);
         char c = cv::waitKey(0);
         if (c == 'q') {
             return 0;

@@ -72,7 +72,8 @@ class ImageAlignment {
     void displayCurrentImage(const bool aWithBBOX = true,
                              const std::string &aTitle = "Current Image",
                              const cv::Scalar &aBBOXColour = cv::Scalar(0, 0,
-                                                                        255));
+                                                                        255),
+                             const int aThickness = 3);
 
     // Track
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,

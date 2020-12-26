@@ -142,13 +142,15 @@ void ImageAlignment::setCurrentImage(const cv::Mat &aImg) {
  * @note Does not wait for keypress (ie. does NOT run waitKey()); must do that
  * yourself
  * @param[in] aWithBBOX Choose whether to display with BBOX or not
- * @param[in] aTitle Title of image window 
+ * @param[in] aTitle Title of image window
  * @param[in] aBBOXColour Colour of bounding box
  */
 void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
                                          const std::string &aTitle,
-                                         const cv::Scalar &aBBOXColour) {
+                                         const cv::Scalar &aBBOXColour,
+                                         const int aThickness) {
     cv::Mat disImg(getCurrentImage());
+    cv::cvtColor(disImg, disImg, cv::COLOR_GRAY2RGB);
 
     // Draw BBOX
     if (aWithBBOX) {
@@ -156,7 +158,9 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
         cv::Point2f topPt(bbox[0], bbox[1]);
         cv::Point2f bottomPt(bbox[2], bbox[3]);
 
-        cv::rectangle(disImg, topPt, bottomPt, aBBOXColour);
+        std::cout << topPt << " " << bottomPt << std::endl;
+
+        cv::rectangle(disImg, topPt, bottomPt, aBBOXColour, aThickness);
     }
 
     cv::imshow(aTitle, disImg);
