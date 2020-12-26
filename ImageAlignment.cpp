@@ -282,7 +282,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
-        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage);
+        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
+                          CV_32F);
 
         // Obtain errorImage which will then be converted to flattened image
         // vector
@@ -292,14 +293,16 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Weight for robust M-estimator
         // TODO: Use actual weights, dummy identity for now
-        weights = Eigen::VectorXd::Ones(N_PIXELS).asDiagonal();
+        weights.diagonal() << 1, 1, 1; 
+
         Hessian = JacobianTransposed * weights * Jacobian;
         HessianInverse = Hessian.inverse();
 
         // Solve for new deltaP
-        // deltaP = HessianInverse * JacobianTransposed * weights * errorVector;
+        deltaP = HessianInverse * JacobianTransposed * weights * errorVector;
 
-        // cv::imshow("warped", warpedImage);
+        // std::cout << deltaP << std::endl;
+        cv::imshow("warped", warpedImage);
     }
 
     // TODO: Warp affine
