@@ -189,7 +189,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Get BBOX
     bbox_t &bbox = getBBOX();
-    cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    cv::Size2d bboxSize(bbox[2] - bbox[0] + 1, bbox[3] - bbox[1] + 1);
     cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
     // Subpixel crop
@@ -211,7 +211,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
-    const size_t N_PIXELS = (bboxSize.width + 1) * (bboxSize.height + 1) + 1;
+    const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height) + 1;
 
     // Initialise matrices
     Eigen::MatrixXd Jacobian(N_PIXELS, 6);
