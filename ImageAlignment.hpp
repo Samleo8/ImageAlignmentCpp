@@ -17,6 +17,7 @@
 #include <Eigen/LU>
 #include <iostream>
 #include <opencv2/opencv.hpp>
+#include <opencv2/core/eigen.hpp>
 #include <vector>
 
 /// @brief BBOX Type: Simple TLBR array
@@ -77,7 +78,7 @@ class ImageAlignment {
 
     // Track
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
-               const unsigned int aMaxIters = 100);
+               const size_t aMaxIters = 100);
 };
 
 #endif

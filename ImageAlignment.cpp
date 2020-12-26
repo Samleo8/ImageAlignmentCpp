@@ -158,8 +158,6 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
         cv::Point2f topPt(bbox[0], bbox[1]);
         cv::Point2f bottomPt(bbox[2], bbox[3]);
 
-        std::cout << topPt << " " << bottomPt << std::endl;
-
         cv::rectangle(disImg, topPt, bottomPt, aBBOXColour, aThickness);
     }
 
@@ -174,16 +172,19 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
  *
  * @param[in] aNewImage New image to track in
  * @param[in] aThreshold Threshold to compare against
- * @param[in] aMaxIters
+ * @param[in] aMaxIters Maximum iterations before stop
  */
 void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
-                           const unsigned int aMaxIters) {
+                           const size_t aMaxIters) {
     // Set new images
     //  - "Current" image becomes template
     //  - New image becomes current image
-    cv::Mat templateImage = getCurrentImage();
+    const cv::Mat &templateImage = getCurrentImage();
+    const cv::Mat &currentImage = aNewImage;
+    const cv::Size2d IMAGE_SIZE = currentImage.size();
+
     setTemplateImage(templateImage);
-    setCurrentImage(aNewImage);
+    setCurrentImage(currentImage);
 
     // Get BBOX
     bbox_t &bbox = getBBOX();
@@ -210,9 +211,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Precompute Jacobian and Hessian */
     // Initialise matrices
     Eigen::VectorXf Jacobian(6);
-    Eigen::MatrixXf Hessian(6, 6);
-    Eigen::MatrixXf InverseHessian(6, 6);
-
     Eigen::MatrixXf dWdp(2, 6);
     Eigen::RowVector2f delI(2);
 
@@ -247,10 +245,29 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         i++;
     }
 
-    Hessian = Jacobian * Jacobian.transpose();
-    InverseHessian = Hessian.inverse();
+    const Eigen::Matrix<float, 6, 1> JacobianTransposed = Jacobian.transpose();
+    const Eigen::Matrix<float, 6, 6> Hessian = Jacobian * JacobianTransposed;
+    const Eigen::Matrix<float, 6, 6> HessianInverse = Hessian.inverse();
 
+    /* Iteratively find best match */
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
+
+    // TODO: Find a way to alias the top 2 rows
+    // const Eigen::Matrix<double, 2, 3> (&warpMatTrunc)(warpMat.topRows(2));
+
+    cv::Mat warpedImage;
+    cv::Mat warpMatCV(2, 3, CV_32FC1);
+    Eigen::Matrix<float, 2, 3> warpMatTrunc;
+
+    for (size_t i = 0; i < aMaxIters; i++) {
+        // warpMat += Eigen::Matrix3d::Identity();
+        warpMatTrunc = warpMat.topRows(2);
+        cv::eigen2cv(warpMatTrunc, warpMatCV);
+
+        cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
+
+
+    }
 
     // TODO: Warp affine
     // https://docs.opencv.org/master/da/d54/group__imgproc__transform.html#ga0203d9ee5fcd28d40dbc4a1ea4451983
