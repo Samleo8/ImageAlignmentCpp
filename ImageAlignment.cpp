@@ -214,9 +214,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     const size_t N_PIXELS = (bboxSize.width + 1) * (bboxSize.height + 1) + 1;
 
     // Initialise matrices
-    Eigen::MatrixXf Jacobian(N_PIXELS, 6);
-    Eigen::MatrixXf dWdp(2, 6);
-    Eigen::RowVector2f delI(2);
+    Eigen::MatrixXd Jacobian(N_PIXELS, 6);
+    Eigen::MatrixXd dWdp(2, 6);
+    Eigen::RowVector2d delI(2);
 
     // Loop over everything, linearly-spaced
     size_t i = 0, j = 0, total = 0;
@@ -243,12 +243,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     }
 
     // Cache the transposed matrix
-    Eigen::MatrixXf JacobianTransposed(6, N_PIXELS);
+    Eigen::MatrixXd JacobianTransposed(6, N_PIXELS);
     JacobianTransposed = Jacobian.transpose();
 
     /* Iteratively find best match */
     // Warp matrix (affine warp)
-    Eigen::Matrix3f warpMat = Eigen::Matrix3f::Identity();
+    Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
     // Warped images
@@ -257,20 +257,20 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Error Images
     cv::Mat errorImage;
-    Eigen::MatrixXf errorVector; // NOTE: dynamic, will flatten later
+    Eigen::MatrixXd errorVector; // NOTE: dynamic, will flatten later
 
     // Robust M Estimator Weights
-    Eigen::DiagonalMatrix<float, Eigen::Dynamic> weights;
+    Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
 
     // Delta P vector
-    Eigen::VectorXf deltaP(6);
+    Eigen::VectorXd deltaP(6);
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // warpMat += Eigen::Matrix3f::Identity();
         // std::cout << warpMatTrunc << std::endl;
 
         // Convert to cv::Mat
-        cv::eigen2cv(static_cast<Eigen::Matrix<float, 2, 3>>(warpMatTrunc),
+        cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
                      warpMatCV);
 
         // Perform an affine warp
@@ -288,18 +288,21 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // TODO: Use actual weights, dummy identity for now
         weights.setIdentity(N_PIXELS);
 
-        const Eigen::MatrixXf weightedJTrans = JacobianTransposed * weights;
-        const Eigen::MatrixXf Hessian = weightedJTrans * Jacobian;
-        const Eigen::VectorXf vectorB = weightedJTrans * errorVector;
+        const Eigen::MatrixXd weightedJTrans = JacobianTransposed; // * weights;
+        const Eigen::MatrixXd Hessian = weightedJTrans * Jacobian;
+        const Eigen::VectorXd vectorB = weightedJTrans * errorVector;
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
-        std::cout << deltaP << std::endl;
 
-        // Copy over data in order to inverse matrix
-        Eigen::VectorXf warpMatDelta(9);
+        // Reshape data in order to inverse matrix
+        Eigen::VectorXd deltaPHomo(9);
 
-        warpMatDelta << deltaP, 0, 0, 1;
+        std::cout << Hessian << Hessian.inverse() << std::endl;
+
+        deltaPHomo << deltaP, 0, 0, 1;
+
+        Eigen::Map<Eigen::Matrix3d> warpMatDelta(deltaPHomo.data(), 3, 3);
 
         std::cout << warpMatDelta << std::endl;
 
