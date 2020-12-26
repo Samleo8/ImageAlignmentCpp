@@ -268,7 +268,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::DiagonalMatrix<float, Eigen::Dynamic> weights;
 
     // Delta P vector
-    Eigen::MatrixXf deltaP;
+    Eigen::VectorXf deltaP(6);
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // warpMat += Eigen::Matrix3f::Identity();
