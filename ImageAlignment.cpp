@@ -183,7 +183,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     const cv::Mat &currentImage = aNewImage;
 
     const cv::Size2d IMAGE_SIZE = currentImage.size();
-    const size_t N_PIXELS = IMAGE_SIZE.width * IMAGE_SIZE.height;
 
     setTemplateImage(templateImage);
     setCurrentImage(currentImage);
@@ -211,6 +210,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
                       CV_32F);
 
     /* Precompute Jacobian and Hessian */
+    // NOTE: BBOX SIZE!
+    const size_t N_PIXELS = bboxSize.width * bboxSize.height;
+
     // Initialise matrices
     Eigen::MatrixXf Jacobian(N_PIXELS, 6);
     Eigen::MatrixXf dWdp(2, 6);
