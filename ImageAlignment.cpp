@@ -195,19 +195,23 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // Subpixel crop
     // Get actual template sub image
     cv::Mat templateSubImage;
-    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, templateSubImage);
-
-    std::cout << "depth " << templateSubImage.depth() << std::endl;
-    return;
+    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, templateSubImage, CV_32F);
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
     cv::Sobel(templateImage, templateGradX, CV_16S, 1, 0);
     cv::Sobel(templateImage, templateGradY, CV_16S, 0, 1);
 
-    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX);
+    // Need to convert to float first
+    templateGradX.convertTo(templateGradX, CV_32F);
+    templateGradY.convertTo(templateGradY, CV_32F);
 
-    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY);
+    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
+                      CV_32F);
+    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
+                      CV_32F);
+
+
 
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
@@ -223,7 +227,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
 
-
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
@@ -231,8 +234,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             dWdp << x, 0, y, 0, 1, 0, //
                 0, x, 0, y, 0, 1;
 
-            float delIx = templateGradX.at<float>(j, i);
-            float delIy = templateGradY.at<float>(j, i);
+            double delIx = static_cast<double>(templateGradX.at<float>(j, i));
+            double delIy = static_cast<double>(templateGradY.at<float>(j, i));
 
             delI << delIx, delIy;
 
@@ -243,6 +246,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         }
         i++;
     }
+
+    // freopen("output.txt", "w", stdout);
+
+    // std::cout << "Image: " << currentImage << "\n\n";
+    // std::cout << "Jacobian: " << Jacobian << "\n\n";
 
     // Cache the transposed matrix
     Eigen::MatrixXd JacobianTransposed(6, N_PIXELS);
@@ -255,7 +263,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Warped images
     cv::Mat warpedImage, warpedSubImage;
-    cv::Mat warpMatCV(2, 3, CV_32FC1);
+    cv::Mat warpMatCV(2, 3, CV_64F);
 
     // Error Images
     cv::Mat errorImage;
@@ -267,8 +275,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // Delta P vector
     Eigen::VectorXd deltaP(6);
 
-    std::cout << Jacobian << "\n\n"; return;
-
     for (size_t i = 0; i < aMaxIters; i++) {
         // warpMat += Eigen::Matrix3f::Identity();
         // std::cout << warpMatTrunc << std::endl;
@@ -277,12 +283,14 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
                      warpMatCV);
 
+        std::cout << currentImage.depth() << " " << warpMatCV.depth() << std::endl;
+
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
-
+                          
         // Obtain errorImage which will then be converted to flattened image
         // vector;
         cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
@@ -299,8 +307,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
         std::cout << "deltaP" << deltaP << std::endl;
-        std::cout << "Hessian" << Hessian << "HessianInverse" << Hessian.inverse()
-                  << std::endl;
+        std::cout << "Hessian" << Hessian << "HessianInverse"
+                  << Hessian.inverse() << std::endl;
 
         // Reshape data in order to inverse matrix
         Eigen::Matrix3d warpMatDelta;
