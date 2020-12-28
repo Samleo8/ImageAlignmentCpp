@@ -245,7 +245,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             double delIx = getSubPixelValue(templateGradX, x, y);
             double delIy = getSubPixelValue(templateGradY, x, y);
 
-            // std::cout << delIx << " " << delIy << std::endl;
+            std::cout << std::setprecision(2) << std::fixed << delIx << " " << delIy << std::endl;
 
             delI << delIx, delIy;
 
@@ -429,8 +429,6 @@ double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
             brPixel = aImg.at<float>(y1, x1);
             break;
     }
-
-    std::cout << tlPixel << " ";
 
     // Return weighted pixel
     return tlWeight * tlPixel + trWeight * trPixel + blWeight * blPixel +
