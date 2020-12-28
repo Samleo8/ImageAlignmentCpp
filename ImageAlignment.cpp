@@ -196,14 +196,13 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // Subpixel crop
     cv::Mat templateImageFloat;
     templateImage.convertTo(templateImageFloat, CV_32FC1);
-    templateImage.convertTo(templateImageFloat, CV_32FC1);
 
     // Get actual template sub image
     cv::Mat templateSubImage;
     cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
                       templateSubImage, CV_32FC1);
 
-    printCVMat(templateSubImage, "templateSubImage");
+    // printCVMat(templateSubImage, "templateSubImage");
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
@@ -211,17 +210,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Sobel(templateImageFloat, templateGradY, CV_32FC1, 0, 1);
 
     // Need to convert to float first
-    // templateGradX.convertTo(templateGradX, CV_32F);
-    // templateGradY.convertTo(templateGradY, CV_32F);
-
-    // TODO: Don't use this function anymore as it returns an image which is int by nature?
-    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
-                      CV_32FC1);
-    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
-                      CV_32FC1);
-    std::cout << "templateGradX " << templateGradX.depth() << " :"
-              << templateGradX << "\n\n";
-    return;
 
     // cv::Mat display;
     // cv::normalize(templateGradX, display, 0, 255, cv::NORM_MINMAX, CV_8UC1);
@@ -246,30 +234,29 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     float deltaY = bboxSize.height / int(bboxSize.height);
 
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
-        j = 0;
+        // j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
             // Create dWdp matrix
             dWdp << x, 0, y, 0, 1, 0, //
                 0, x, 0, y, 0, 1;
 
-            // TODO: Use getSubPixelValue instead
-            double delIx = static_cast<double>(templateGradX.at<float>(j, i));
-            double delIy = static_cast<double>(templateGradY.at<float>(j, i));
+            // Use getSubPixelValue instead
+            double delIx = getSubPixelValue(templateGradX, x, y);
+            double delIy = getSubPixelValue(templateGradY, x, y);
 
             delI << delIx, delIy;
 
             Jacobian.row(total) << delI * dWdp;
 
-            j++;
-            total++;
+            // j++;
+            // total++;
         }
-        i++;
+        // i++;
     }
 
-    // freopen("output.txt", "w", stdout);
+    freopen("output.txt", "w", stdout);
 
-    // std::cout << "Image: " << currentImage << "\n\n";
-    // std::cout << "templateGradX " << templateGradX.depth() << " :" <<
+    std::cout << "Image: " << currentImage << "\n\n";
     // templateGradX << "\n\n"; std::cout << "Jacobian: " << Jacobian << "\n\n";
     return;
 
@@ -368,7 +355,7 @@ void ImageAlignment::printCVMat(cv::Mat &aMat, std::string aName) {
     for (int i = 0; i < aMat.rows; i++) {
         const double *Mi = aMat.ptr<double>(i);
         for (int j = 0; j < aMat.cols; j++)
-            std::cout << Mi[j] << " ";
+            std::cout << Mi[j] << ", ";
         std::cout << std::endl;
     }
     std::cout << std::endl;
@@ -384,13 +371,15 @@ void ImageAlignment::printCVMat(cv::Mat &aMat, std::string aName) {
  * @param[in] ax x-coordinate (sub-pixel)
  * @param[in] ay y-coordiate (sub-pixel)
  *
- * @return Sub pixel value from bilinear interpolation (float)
+ * @return Sub pixel value from bilinear interpolation (double)
  */
-float ImageAlignment::getSubPixelValue(cv::Mat &aImg, float ax, float ay) {
+double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
     assert(!aImg.empty());
     assert(aImg.channels() == 1);
 
     // Get the rounded down versions
+    // Doesn't really matter if int because the values of ax/ay are unlikely to
+    // be so large
     int intX = static_cast<int>(ax);
     int intY = static_cast<int>(ay);
 
@@ -401,21 +390,21 @@ float ImageAlignment::getSubPixelValue(cv::Mat &aImg, float ax, float ay) {
     int y1 = cv::borderInterpolate(intY + 1, aImg.rows, cv::BORDER_REFLECT_101);
 
     // Get deltas
-    float dx = ax - static_cast<float>(intX);
-    float dy = ay - static_cast<float>(intY);
-    const float dx1 = 1.0 - dx;
-    const float dy1 = 1.0 - dy;
+    double dx = ax - static_cast<double>(intX);
+    double dy = ay - static_cast<double>(intY);
+    const double dx1 = 1.0 - dx;
+    const double dy1 = 1.0 - dy;
 
     // Get weights and pixels
-    float tlWeight = dx1 * dy1;
-    float trWeight = dx * dy1;
-    float blWeight = dx1 * dy;
-    float brWeight = dx * dy;
+    double tlWeight = dx1 * dy1;
+    double trWeight = dx * dy1;
+    double blWeight = dx1 * dy;
+    double brWeight = dx * dy;
 
-    float tlPixel = aImg.at<float>(y0, x0);
-    float trPixel = aImg.at<float>(y0, x1);
-    float blPixel = aImg.at<float>(y1, x0);
-    float brPixel = aImg.at<float>(y1, x1);
+    double tlPixel = aImg.at<double>(y0, x0);
+    double trPixel = aImg.at<double>(y0, x1);
+    double blPixel = aImg.at<double>(y1, x0);
+    double brPixel = aImg.at<double>(y1, x1);
 
     // Return weighted pixel
     return tlWeight * tlPixel + trWeight * trPixel + blWeight * blPixel +

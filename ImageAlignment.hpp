@@ -78,7 +78,7 @@ class ImageAlignment {
                              const int aThickness = 3);
 
     // Get sub pixel value of image
-    float getSubPixelValue(cv::Mat &aImg, float ax, float ay);
+    double getSubPixelValue(cv::Mat &aImg, double ax, double ay);
 
     // Track
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
