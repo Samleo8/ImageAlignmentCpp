@@ -256,7 +256,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // std::cout << "Image: " << currentImage << "\n\n";
     // std::cout << "Jacobian: " << Jacobian << "\n\n";
-    return;
 
     // Cache the transposed matrix
     Eigen::MatrixXd JacobianTransposed(6, N_PIXELS);
