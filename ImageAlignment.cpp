@@ -11,6 +11,7 @@
  */
 
 #include "ImageAlignment.hpp"
+#include <stdio.h>
 
 /**
  * @brief Constructor for ImageAlignment class (empty)
@@ -199,19 +200,18 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
-    cv::Sobel(templateImage, templateGradX, CV_16S, 1, 0);
-    cv::Sobel(templateImage, templateGradY, CV_16S, 0, 1);
+    cv::Mat templateSubGradX, templateSubGradY;
+    cv::Sobel(templateImage, templateGradX, CV_32F, 1, 0);
+    cv::Sobel(templateImage, templateGradY, CV_32F, 0, 1);
 
     // Need to convert to float first
-    templateGradX.convertTo(templateGradX, CV_32F);
-    templateGradY.convertTo(templateGradY, CV_32F);
+    // templateGradX.convertTo(templateGradX, CV_32F);
+    // templateGradY.convertTo(templateGradY, CV_32F);
 
     cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
                       CV_32F);
     cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
                       CV_32F);
-
-
 
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
@@ -247,10 +247,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         i++;
     }
 
-    // freopen("output.txt", "w", stdout);
+    freopen("output.txt", "w", stdout);
 
     // std::cout << "Image: " << currentImage << "\n\n";
-    // std::cout << "Jacobian: " << Jacobian << "\n\n";
+    std::cout << "templateGradX " << templateGradX.depth() << " :" << templateGradX << "\n\n";
+    std::cout << "Jacobian: " << Jacobian << "\n\n";
+    return;
 
     // Cache the transposed matrix
     Eigen::MatrixXd JacobianTransposed(6, N_PIXELS);
