@@ -15,8 +15,8 @@
 
 #include <Eigen/Dense>
 #include <iostream>
-#include <opencv2/opencv.hpp>
 #include <opencv2/core/eigen.hpp>
+#include <opencv2/opencv.hpp>
 #include <vector>
 
 /// @brief BBOX Type: Simple TLBR array
@@ -42,6 +42,8 @@ class ImageAlignment {
 
     /// @brief Current Image (current frame)
     cv::Mat mCurrentImage;
+
+    void printCVMat(cv::Mat &aMat, std::string aName = "CV Matrix");
 
   public:
     // Constructor

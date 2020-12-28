@@ -194,25 +194,33 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
 
     // Subpixel crop
+    cv::Mat templateImageFloat;
+    templateImage.convertTo(templateImageFloat, CV_32FC1);
+    templateImage.convertTo(templateImageFloat, CV_32FC1);
+
     // Get actual template sub image
     cv::Mat templateSubImage;
-    cv::getRectSubPix(templateImage, bboxSize, bboxCenter, templateSubImage, CV_32F);
+    cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
+                      templateSubImage, CV_32FC1);
+
+    printCVMat(templateSubImage, "templateSubImage");
 
     // Get template image gradients
     cv::Mat templateGradX, templateGradY;
-    cv::Sobel(templateImage, templateGradX, CV_32F, 1, 0);
-    cv::Sobel(templateImage, templateGradY, CV_32F, 0, 1);
+    cv::Sobel(templateImageFloat, templateGradX, CV_32FC1, 1, 0);
+    cv::Sobel(templateImageFloat, templateGradY, CV_32FC1, 0, 1);
 
     // Need to convert to float first
     // templateGradX.convertTo(templateGradX, CV_32F);
     // templateGradY.convertTo(templateGradY, CV_32F);
 
     cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
-                      CV_32F);
+                      CV_32FC1);
     cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
-                      CV_32F);
+                      CV_32FC1);
     std::cout << "templateGradX " << templateGradX.depth() << " :" <<
     templateGradX << "\n\n";
+    return;
 
     // cv::Mat display;
     // cv::normalize(templateGradX, display, 0, 255, cv::NORM_MINMAX, CV_8UC1);
@@ -350,4 +358,15 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     std::cout << "bbox:" << newBBOXHomo << std::endl;
     setBBOX(newBBOXHomo(0, 0), newBBOXHomo(1, 0), newBBOXHomo(0, 1),
             newBBOXHomo(1, 1));
+}
+
+void ImageAlignment::printCVMat(cv::Mat &aMat, std::string aName) {
+    std::cout << aName << std::endl;
+    for (int i = 0; i < aMat.rows; i++) {
+        const double *Mi = aMat.ptr<double>(i);
+        for (int j = 0; j < aMat.cols; j++)
+            std::cout << Mi[j] << " ";
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
