@@ -233,7 +233,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
 
-    freopen("output.txt", "w", stdout);
+    // freopen("output.txt", "w", stdout);
 
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
@@ -245,7 +245,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             double delIx = getSubPixelValue(templateGradX, x, y);
             double delIy = getSubPixelValue(templateGradY, x, y);
 
-            std::cout << delIx << " " << delIy << std::endl;
+            // std::cout << delIx << " " << delIy << std::endl;
 
             delI << delIx, delIy;
 
@@ -270,7 +270,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // Warped images
     cv::Mat warpedImage, warpedSubImage;
     cv::Mat warpMatCV(2, 3, CV_64F);
-
     // Error Images
     cv::Mat errorImage;
     Eigen::MatrixXd errorVector; // NOTE: dynamic, will flatten later
@@ -399,10 +398,13 @@ double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
     double blWeight = dx1 * dy;
     double brWeight = dx * dy;
 
-    double tlPixel = aImg.at<double>(y0, x0);
-    double trPixel = aImg.at<double>(y0, x1);
-    double blPixel = aImg.at<double>(y1, x0);
-    double brPixel = aImg.at<double>(y1, x1);
+    double tlPixel = aImg.at<float>(y0, x0);
+    double trPixel = aImg.at<float>(y0, x1);
+    double blPixel = aImg.at<float>(y1, x0);
+    double brPixel = aImg.at<float>(y1, x1);
+
+    // std::cout << aImg.depth();
+    std::cout << tlPixel << " ";
 
     // Return weighted pixel
     return tlWeight * tlPixel + trWeight * trPixel + blWeight * blPixel +
