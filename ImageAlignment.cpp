@@ -350,6 +350,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 void ImageAlignment::printCVMat(cv::Mat &aMat, std::string aName) {
     std::cout << aName << std::endl;
     for (int i = 0; i < aMat.rows; i++) {
+        // TODO: type check
         const double *Mi = aMat.ptr<double>(i);
         for (int j = 0; j < aMat.cols; j++)
             std::cout << Mi[j] << ", ";
@@ -377,18 +378,22 @@ double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
     // Get the rounded down versions
     // Doesn't really matter if int because the values of ax/ay are unlikely to
     // be so large
-    int intX = static_cast<int>(ax);
-    int intY = static_cast<int>(ay);
+    const int intX = static_cast<int>(ax);
+    const int intY = static_cast<int>(ay);
 
     // Interpolate in case at border
-    int x0 = cv::borderInterpolate(intX, aImg.cols, cv::BORDER_REFLECT_101);
-    int x1 = cv::borderInterpolate(intX + 1, aImg.cols, cv::BORDER_REFLECT_101);
-    int y0 = cv::borderInterpolate(intY, aImg.rows, cv::BORDER_REFLECT_101);
-    int y1 = cv::borderInterpolate(intY + 1, aImg.rows, cv::BORDER_REFLECT_101);
+    const int x0 =
+        cv::borderInterpolate(intX, aImg.cols, cv::BORDER_REFLECT_101);
+    const int x1 =
+        cv::borderInterpolate(intX + 1, aImg.cols, cv::BORDER_REFLECT_101);
+    const int y0 =
+        cv::borderInterpolate(intY, aImg.rows, cv::BORDER_REFLECT_101);
+    const int y1 =
+        cv::borderInterpolate(intY + 1, aImg.rows, cv::BORDER_REFLECT_101);
 
     // Get deltas
-    double dx = ax - static_cast<double>(intX);
-    double dy = ay - static_cast<double>(intY);
+    const double dx = ax - static_cast<double>(intX);
+    const double dy = ay - static_cast<double>(intY);
     const double dx1 = 1.0 - dx;
     const double dy1 = 1.0 - dy;
 
@@ -398,12 +403,33 @@ double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
     double blWeight = dx1 * dy;
     double brWeight = dx * dy;
 
-    double tlPixel = aImg.at<float>(y0, x0);
-    double trPixel = aImg.at<float>(y0, x1);
-    double blPixel = aImg.at<float>(y1, x0);
-    double brPixel = aImg.at<float>(y1, x1);
+    double tlPixel, trPixel, blPixel, brPixel;
 
-    // std::cout << aImg.depth();
+    // Check type to ensure that we are getting the right values
+    // otherwise we'd be accessing a wrong pointer
+    switch (aImg.type()) {
+        case CV_8S:
+        case CV_8U:
+            tlPixel = aImg.at<int>(y0, x0);
+            trPixel = aImg.at<int>(y0, x1);
+            blPixel = aImg.at<int>(y1, x0);
+            brPixel = aImg.at<int>(y1, x1);
+            break;
+        case CV_64F:
+            tlPixel = aImg.at<double>(y0, x0);
+            trPixel = aImg.at<double>(y0, x1);
+            blPixel = aImg.at<double>(y1, x0);
+            brPixel = aImg.at<double>(y1, x1);
+            break;
+        case CV_32F:
+        default:
+            tlPixel = aImg.at<float>(y0, x0);
+            trPixel = aImg.at<float>(y0, x1);
+            blPixel = aImg.at<float>(y1, x0);
+            brPixel = aImg.at<float>(y1, x1);
+            break;
+    }
+
     std::cout << tlPixel << " ";
 
     // Return weighted pixel
