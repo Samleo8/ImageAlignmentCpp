@@ -229,12 +229,13 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::RowVector2d delI(2);
 
     // Loop over everything, linearly-spaced
-    size_t i = 0, j = 0, total = 0;
+    size_t total = 0;
     float deltaX = bboxSize.width / int(bboxSize.width);
     float deltaY = bboxSize.height / int(bboxSize.height);
 
+    freopen("output.txt", "w", stdout);
+
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
-        // j = 0;
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
             // Create dWdp matrix
             dWdp << x, 0, y, 0, 1, 0, //
@@ -244,20 +245,17 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             double delIx = getSubPixelValue(templateGradX, x, y);
             double delIy = getSubPixelValue(templateGradY, x, y);
 
+            std::cout << delIx << " " << delIy << std::endl;
+
             delI << delIx, delIy;
 
             Jacobian.row(total) << delI * dWdp;
-
-            // j++;
-            // total++;
+            total++;
         }
-        // i++;
     }
 
-    freopen("output.txt", "w", stdout);
-
-    std::cout << "Image: " << currentImage << "\n\n";
-    // templateGradX << "\n\n"; std::cout << "Jacobian: " << Jacobian << "\n\n";
+    // std::cout << "Image: " << currentImage << "\n\n";
+    // std::cout << "Jacobian: " << Jacobian << "\n\n";
     return;
 
     // Cache the transposed matrix
