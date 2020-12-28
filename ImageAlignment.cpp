@@ -214,6 +214,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // templateGradX.convertTo(templateGradX, CV_32F);
     // templateGradY.convertTo(templateGradY, CV_32F);
 
+    // TODO: Don't use this function anymore as it returns an image which is int by nature?
     cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradX,
                       CV_32FC1);
     cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
@@ -251,6 +252,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             dWdp << x, 0, y, 0, 1, 0, //
                 0, x, 0, y, 0, 1;
 
+            // TODO: Use getSubPixelValue instead
             double delIx = static_cast<double>(templateGradX.at<float>(j, i));
             double delIy = static_cast<double>(templateGradY.at<float>(j, i));
 
