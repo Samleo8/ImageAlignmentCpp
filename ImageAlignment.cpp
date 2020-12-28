@@ -218,8 +218,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
                       CV_32FC1);
     cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradY,
                       CV_32FC1);
-    std::cout << "templateGradX " << templateGradX.depth() << " :" <<
-    templateGradX << "\n\n";
+    std::cout << "templateGradX " << templateGradX.depth() << " :"
+              << templateGradX << "\n\n";
     return;
 
     // cv::Mat display;
@@ -229,7 +229,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // cv::imshow("templateImageGradY", display);
     // cv::waitKey(0);
     // cv::destroyAllWindows();
-    
+
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
     const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height) + 1;
@@ -267,8 +267,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // freopen("output.txt", "w", stdout);
 
     // std::cout << "Image: " << currentImage << "\n\n";
-    // std::cout << "templateGradX " << templateGradX.depth() << " :" << templateGradX << "\n\n";
-    // std::cout << "Jacobian: " << Jacobian << "\n\n";
+    // std::cout << "templateGradX " << templateGradX.depth() << " :" <<
+    // templateGradX << "\n\n"; std::cout << "Jacobian: " << Jacobian << "\n\n";
     return;
 
     // Cache the transposed matrix
@@ -302,14 +302,15 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
                      warpMatCV);
 
-        std::cout << currentImage.depth() << " " << warpMatCV.depth() << std::endl;
+        std::cout << currentImage.depth() << " " << warpMatCV.depth()
+                  << std::endl;
 
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
-                          
+
         // Obtain errorImage which will then be converted to flattened image
         // vector;
         cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
@@ -369,4 +370,52 @@ void ImageAlignment::printCVMat(cv::Mat &aMat, std::string aName) {
         std::cout << std::endl;
     }
     std::cout << std::endl;
+}
+
+/**
+ * @brief Get sub pixel value in cv Mat using bilinear interpolation
+ *
+ * @ref https://stackoverflow.com/a/13301755/3141253
+ *
+ * @param[in] aImg Input image to get sub pixel value from
+ * @pre Must be single channel
+ * @param[in] ax x-coordinate (sub-pixel)
+ * @param[in] ay y-coordiate (sub-pixel)
+ *
+ * @return Sub pixel value from bilinear interpolation (float)
+ */
+float ImageAlignment::getSubPixelValue(cv::Mat &aImg, float ax, float ay) {
+    assert(!aImg.empty());
+    assert(aImg.channels() == 1);
+
+    // Get the rounded down versions
+    int intX = static_cast<int>(ax);
+    int intY = static_cast<int>(ay);
+
+    // Interpolate in case at border
+    int x0 = cv::borderInterpolate(intX, aImg.cols, cv::BORDER_REFLECT_101);
+    int x1 = cv::borderInterpolate(intX + 1, aImg.cols, cv::BORDER_REFLECT_101);
+    int y0 = cv::borderInterpolate(intY, aImg.rows, cv::BORDER_REFLECT_101);
+    int y1 = cv::borderInterpolate(intY + 1, aImg.rows, cv::BORDER_REFLECT_101);
+
+    // Get deltas
+    float dx = ax - static_cast<float>(intX);
+    float dy = ay - static_cast<float>(intY);
+    const float dx1 = 1.0 - dx;
+    const float dy1 = 1.0 - dy;
+
+    // Get weights and pixels
+    float tlWeight = dx1 * dy1;
+    float trWeight = dx * dy1;
+    float blWeight = dx1 * dy;
+    float brWeight = dx * dy;
+
+    float tlPixel = aImg.at<float>(y0, x0);
+    float trPixel = aImg.at<float>(y0, x1);
+    float blPixel = aImg.at<float>(y1, x0);
+    float brPixel = aImg.at<float>(y1, x1);
+
+    // Return weighted pixel
+    return tlWeight * tlPixel + trWeight * trPixel + blWeight * blPixel +
+           brWeight * brPixel;
 }
