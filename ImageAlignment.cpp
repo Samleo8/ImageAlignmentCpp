@@ -195,10 +195,8 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian,
     const int nX = int(bboxWidth);
     const int nY = int(bboxHeight);
 
-    const float deltaX = bboxWidth / nX;
-    const float deltaY = bboxHeight / nY;
-
-    std::cout << aJacobian.rows() << " " << aJacobian.cols() << std::endl;
+    const float deltaX = bboxWidth / (nX - 1);
+    const float deltaY = bboxHeight / (nY - 1);
 
     for (int i = 0; i < nY; i++) {
         float y = bbox[1] + deltaY * i;
@@ -213,17 +211,11 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian,
             double delIx = getSubPixelValue(aTemplateGradX, x, y);
             double delIy = getSubPixelValue(aTemplateGradY, x, y);
 
-            // std::cout << std::setprecision(2) << std::fixed << "(" << x
-            //           << ", " << y << ") " << delIx << " " << delIy <<
-            //           std::endl;
-            if (y == bbox[1])
-                std::cout << std::setprecision(2) << std::fixed << x << " ";
-
+            // std::cout << std::setprecision(2) << std::fixed << "(" << x << ", "
+            //           << y << ") " << delIx << " " << delIy << std::endl;
             delI << delIx, delIy;
 
-            std::cout << total << " " << delI * dWdp << std::endl;
-
-            // aJacobian.row(total) << delI * dWdp;
+            aJacobian.row(total) << delI * dWdp;
             total++;
         }
     }
