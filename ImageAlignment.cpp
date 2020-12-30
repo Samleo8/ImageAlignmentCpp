@@ -177,27 +177,34 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
  * @param[in] aTemplateGradX x-gradient of template
  * @param[in] aTemplateGradY y-gradient of template
  */
-void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &aTemplateGradX,
-                     const cv::Mat &aTemplateGradY) {
+void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian,
+                                     const cv::Mat &aTemplateGradX,
+                                     const cv::Mat &aTemplateGradY) {
     // Get BBOX
-    bbox_t &bbox = getBBOX();
-    float bboxWidth = bbox[2] - bbox[0] + 1;
-    float bboxHeight = bbox[3] - bbox[1] + 1;
+    const bbox_t &bbox = getBBOX();
+    const float bboxWidth = bbox[2] - bbox[0];
+    const float bboxHeight = bbox[3] - bbox[1];
 
     // Initialise matrices
     Eigen::MatrixXd dWdp(2, 6);
     Eigen::RowVector2d delI(2);
 
     // Loop over everything, linearly-spaced
+    // https://stackoverflow.com/questions/27028226/python-linspace-in-c
     size_t total = 0;
-    float deltaX = bboxWidth / int(bboxWidth);
-    float deltaY = bboxHeight / int(bboxHeight);
+    const int nX = int(bboxWidth);
+    const int nY = int(bboxHeight);
 
-    // freopen("output.txt", "w", stdout);
+    const float deltaX = bboxWidth / nX;
+    const float deltaY = bboxHeight / nY;
+
     std::cout << aJacobian.rows() << " " << aJacobian.cols() << std::endl;
 
-    for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
-        for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
+    for (int i = 0; i < nY; i++) {
+        float y = bbox[1] + deltaY * i;
+        for (int j = 0; j < nX; j++) {
+            float x = bbox[0] + deltaX * j;
+
             // Create dWdp matrix
             dWdp << x, 0, y, 0, 1, 0, //
                 0, x, 0, y, 0, 1;
@@ -206,16 +213,24 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &
             double delIx = getSubPixelValue(aTemplateGradX, x, y);
             double delIy = getSubPixelValue(aTemplateGradY, x, y);
 
-            std::cout << std::setprecision(2) << std::fixed << "(" << x
-                      << ", " << y << ") " << delIx << " " << delIy << std::endl;
+            // std::cout << std::setprecision(2) << std::fixed << "(" << x
+            //           << ", " << y << ") " << delIx << " " << delIy <<
+            //           std::endl;
+            if (y == bbox[1])
+                std::cout << std::setprecision(2) << std::fixed << x << " ";
 
             delI << delIx, delIy;
 
-            aJacobian.row(total) << delI * dWdp;
+            std::cout << total << " " << delI * dWdp << std::endl;
+
+            // aJacobian.row(total) << delI * dWdp;
             total++;
         }
     }
 
+    std::cout << std::endl << total;
+
+    freopen("output_jacobian_cpp.txt", "w", stdout);
     std::cout << "Jacobian" << aJacobian << std::endl;
 }
 
@@ -243,9 +258,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     setCurrentImage(currentImage);
 
     // Get BBOX
-    bbox_t &bbox = getBBOX();
-    cv::Size2d bboxSize(bbox[2] - bbox[0] + 1, bbox[3] - bbox[1] + 1);
-    cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2, (bbox[3] + bbox[1]) / 2);
+    const bbox_t &bbox = getBBOX();
+    const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
+                                 (bbox[3] + bbox[1]) / 2);
 
     // Subpixel crop
     cv::Mat templateImageFloat;
@@ -275,7 +291,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
-    const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height) + 1;
+    const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height);
     Eigen::MatrixXd Jacobian(N_PIXELS, 6);
 
     computeJacobian(Jacobian, templateGradX, templateGradY);
