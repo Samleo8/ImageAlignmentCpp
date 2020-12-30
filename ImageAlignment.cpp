@@ -220,8 +220,6 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian,
         }
     }
 
-    std::cout << std::endl << total;
-
     freopen("output_jacobian_cpp.txt", "w", stdout);
     std::cout << "Jacobian" << aJacobian << std::endl;
 }
