@@ -110,6 +110,8 @@ void ImageAlignment::setBBOX(const float aTop, const float aLeft,
 
 /**
  * @brief Get template image (ie prev frame)
+ *
+ * @return cv::Mat template image
  */
 cv::Mat &ImageAlignment::getTemplateImage() {
     return mTemplateImage;
@@ -125,6 +127,8 @@ void ImageAlignment::setTemplateImage(const cv::Mat &aImg) {
 
 /**
  * @brief Get current image
+ *
+ * @return cv::Mat current image
  */
 cv::Mat &ImageAlignment::getCurrentImage() {
     return mTemplateImage;
@@ -163,6 +167,53 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
     }
 
     cv::imshow(aTitle, disImg);
+}
+
+/**
+ * @brief Compute Jacobian used for image alignment
+ * @see ImageAlignment::track()
+ *
+ * @param[out] aJacobian Jacobian matrix (output)
+ * @param[in] aTemplateGradX x-gradient of template
+ * @param[in] aTemplateGradY y-gradient of template
+ */
+void computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &aTemplateGradX,
+                     const cv::Mat &aTemplateGradY) {
+    // Get BBOX
+    bbox_t &bbox = getBBOX();
+    float bboxWidth = bbox[2] - bbox[0] + 1;
+    float bboxHeight = bbox[3] - bbox[1] + 1;
+
+    // Initialise matrices
+    Eigen::MatrixXd dWdp(2, 6);
+    Eigen::RowVector2d delI(2);
+
+    // Loop over everything, linearly-spaced
+    size_t total = 0;
+    float deltaX = bboxWidth / int(bboxWidth);
+    float deltaY = bboxHeight / int(bboxHeight);
+
+    // freopen("output.txt", "w", stdout);
+
+    for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
+        for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
+            // Create dWdp matrix
+            dWdp << x, 0, y, 0, 1, 0, //
+                0, x, 0, y, 0, 1;
+
+            // Use getSubPixelValue instead
+            double delIx = getSubPixelValue(aTemplateGradX, x, y);
+            double delIy = getSubPixelValue(aTemplateGradY, x, y);
+
+            std::cout << std::setprecision(2) << std::fixed << delIx << " "
+                      << delIy << std::endl;
+
+            delI << delIx, delIy;
+
+            aJacobian.row(total) << delI * dWdp;
+            total++;
+        }
+    }
 }
 
 /**
@@ -222,38 +273,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
     const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height) + 1;
+    Eigen::MatrixXd Jacobian(6, N_PIXELS);
 
-    // Initialise matrices
-    Eigen::MatrixXd Jacobian(N_PIXELS, 6);
-    Eigen::MatrixXd dWdp(2, 6);
-    Eigen::RowVector2d delI(2);
-
-    // Loop over everything, linearly-spaced
-    size_t total = 0;
-    float deltaX = bboxSize.width / int(bboxSize.width);
-    float deltaY = bboxSize.height / int(bboxSize.height);
-
-    // freopen("output.txt", "w", stdout);
-
-    for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
-        for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
-            // Create dWdp matrix
-            dWdp << x, 0, y, 0, 1, 0, //
-                0, x, 0, y, 0, 1;
-
-            // Use getSubPixelValue instead
-            double delIx = getSubPixelValue(templateGradX, x, y);
-            double delIy = getSubPixelValue(templateGradY, x, y);
-
-            std::cout << std::setprecision(2) << std::fixed << delIx << " " << delIy << std::endl;
-
-            delI << delIx, delIy;
-
-            Jacobian.row(total) << delI * dWdp;
-            total++;
-        }
-    }
-
+    computeJacobian(Jacobian, templateGradX, templateGradY);
     // std::cout << "Image: " << currentImage << "\n\n";
     // std::cout << "Jacobian: " << Jacobian << "\n\n";
 
@@ -370,7 +392,8 @@ void ImageAlignment::printCVMat(cv::Mat &aMat, std::string aName) {
  *
  * @return Sub pixel value from bilinear interpolation (double)
  */
-double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
+double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
+                                        const double ay) {
     assert(!aImg.empty());
     assert(aImg.channels() == 1);
 
@@ -397,10 +420,10 @@ double ImageAlignment::getSubPixelValue(cv::Mat &aImg, double ax, double ay) {
     const double dy1 = 1.0 - dy;
 
     // Get weights and pixels
-    double tlWeight = dx1 * dy1;
-    double trWeight = dx * dy1;
-    double blWeight = dx1 * dy;
-    double brWeight = dx * dy;
+    const double tlWeight = dx1 * dy1;
+    const double trWeight = dx * dy1;
+    const double blWeight = dx1 * dy;
+    const double brWeight = dx * dy;
 
     double tlPixel, trPixel, blPixel, brPixel;
 

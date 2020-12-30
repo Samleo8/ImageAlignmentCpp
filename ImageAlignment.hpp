@@ -78,11 +78,16 @@ class ImageAlignment {
                              const int aThickness = 3);
 
     // Get sub pixel value of image
-    double getSubPixelValue(cv::Mat &aImg, double ax, double ay);
+    double getSubPixelValue(const cv::Mat &aImg, const double ax,
+                            const double ay);
 
     // Track
+    void computeJacobian(Eigen::MatrixXd &aJacobian,
+                         const cv::Mat &aTemplateGradX,
+                         const cv::Mat &aTemplateGradY);
+
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
-                const size_t aMaxIters = 100);
+               const size_t aMaxIters = 100);
 };
 
 #endif
