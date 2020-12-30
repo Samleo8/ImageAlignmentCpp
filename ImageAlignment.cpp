@@ -194,6 +194,7 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &
     float deltaY = bboxHeight / int(bboxHeight);
 
     // freopen("output.txt", "w", stdout);
+    std::cout << aJacobian.rows() << " " << aJacobian.cols() << std::endl;
 
     for (float y = bbox[1]; y <= bbox[3]; y += deltaY) {
         for (float x = bbox[0]; x <= bbox[2]; x += deltaX) {
@@ -205,8 +206,8 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &
             double delIx = getSubPixelValue(aTemplateGradX, x, y);
             double delIy = getSubPixelValue(aTemplateGradY, x, y);
 
-            std::cout << std::setprecision(2) << std::fixed << delIx << " "
-                      << delIy << std::endl;
+            std::cout << std::setprecision(2) << std::fixed << "(" << x
+                      << ", " << y << ") " << delIx << " " << delIy << std::endl;
 
             delI << delIx, delIy;
 
@@ -275,7 +276,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Precompute Jacobian and Hessian */
     // NOTE: This is the BBOX size; also note the need to add 1
     const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height) + 1;
-    Eigen::MatrixXd Jacobian(6, N_PIXELS);
+    Eigen::MatrixXd Jacobian(N_PIXELS, 6);
 
     computeJacobian(Jacobian, templateGradX, templateGradY);
     return; // TODO: Remove this when not debugging
