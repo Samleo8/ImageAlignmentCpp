@@ -177,7 +177,7 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
  * @param[in] aTemplateGradX x-gradient of template
  * @param[in] aTemplateGradY y-gradient of template
  */
-void computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &aTemplateGradX,
+void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &aTemplateGradX,
                      const cv::Mat &aTemplateGradY) {
     // Get BBOX
     bbox_t &bbox = getBBOX();
