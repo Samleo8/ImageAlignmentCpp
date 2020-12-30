@@ -214,6 +214,8 @@ void computeJacobian(Eigen::MatrixXd &aJacobian, const cv::Mat &aTemplateGradX,
             total++;
         }
     }
+
+    std::cout << "Jacobian" << aJacobian << std::endl;
 }
 
 /**
@@ -276,8 +278,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::MatrixXd Jacobian(6, N_PIXELS);
 
     computeJacobian(Jacobian, templateGradX, templateGradY);
-    // std::cout << "Image: " << currentImage << "\n\n";
-    // std::cout << "Jacobian: " << Jacobian << "\n\n";
+    return; // TODO: Remove this when not debugging
 
     // Cache the transposed matrix
     Eigen::MatrixXd JacobianTransposed(6, N_PIXELS);
