@@ -226,7 +226,7 @@ void ImageAlignment::computeJacobianAndSubImage(
             double delIy = getSubPixelValue(templateGradY, x, y);
             double subPix = getSubPixelValue(aTemplateImage, x, y);
 
-            std::cout << std::setprecision(2) << std::fixed << subPix << std::endl;
+            std::cout << std::setprecision(2) << std::fixed << subPix << " ";
 
             // std::cout << std::setprecision(2) << std::fixed << "(" << x << ",
             // "
@@ -236,6 +236,8 @@ void ImageAlignment::computeJacobianAndSubImage(
             aJacobian.row(total) << delI * dWdp;
             total++;
         }
+
+        std::cout << std::endl;
     }
 
     freopen("output_jacobian_cpp.txt", "w", stdout);
@@ -288,11 +290,13 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size
-    const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height);
+    const size_t bboxWidth = static_cast<size_t>(bboxSize.width);
+    const size_t bboxHeight = static_cast<size_t>(bboxSize.height);
+    const size_t N_PIXELS = (bboxWidth) * (bboxHeight);
 
     // Make sure matrices are of right size before passing into function
     Eigen::MatrixXd Jacobian(N_PIXELS, 6);
-    Eigen::MatrixXd templateSubImage(bboxSize.width, bboxSize.height);
+    Eigen::MatrixXd templateSubImage(bboxWidth, bboxHeight);
 
     computeJacobianAndSubImage(Jacobian, templateSubImage, templateImageFloat);
     return; // TODO: Remove this when not debugging
@@ -307,10 +311,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
     // Warped images
-    cv::Mat warpedImage, warpedSubImage;
+    cv::Mat warpedImage;
+    Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
+
     cv::Mat warpMatCV(2, 3, CV_64F);
+
     // Error Images
-    cv::Mat errorImage;
     Eigen::MatrixXd errorVector; // NOTE: dynamic, will flatten later
 
     // Robust M Estimator Weights
@@ -320,9 +326,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::VectorXd deltaP(6);
 
     for (size_t i = 0; i < aMaxIters; i++) {
-        // warpMat += Eigen::Matrix3f::Identity();
-        // std::cout << warpMatTrunc << std::endl;
-
         // Convert to cv::Mat
         cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
                      warpMatCV);
@@ -333,12 +336,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
-        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
-                          CV_32F);
+        // cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
+        //                   CV_32F);
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
-        cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
+        errorVector = warpedSubImage - templateSubImage;
         errorVector.resize(N_PIXELS, 1);
 
         // Weight for robust M-estimator
