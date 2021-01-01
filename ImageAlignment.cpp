@@ -170,16 +170,30 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
 }
 
 /**
- * @brief Compute Jacobian used for image alignment
- * @see ImageAlignment::track()
+ * @brief Compute Jacobian used for image alignment and also optimally obtain
+ * the sub image computed using ImageAlignment::getSubPixelValue()
+ * @note Image gradients are computed using Sobel x and y filters (function
+ * cv::Sobel)
  *
- * @param[out] aJacobian Jacobian matrix (output)
- * @param[in] aTemplateGradX x-gradient of template
- * @param[in] aTemplateGradY y-gradient of template
+ * @see ImageAlignment::track()
+ * @see ImageAlignment::getSubPixelValue()
+ *
+ * @param[out] aJacobian Jacobian matrix (Eigen output)
+ * @param[out] aTemplateSubImage Sub image matrix (Eigen output)
+ * @param[in] aTemplateImage Template image (cv input)
+ * 
+ * @pre output params should be of type double, and should also be of the correct BBOX size
  */
-void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian,
-                                     const cv::Mat &aTemplateGradX,
-                                     const cv::Mat &aTemplateGradY) {
+void ImageAlignment::computeJacobianAndSubImage(
+    Eigen::MatrixXd &aJacobian, Eigen::MatrixXd &aTemplateSubImage,
+    const cv::Mat &aTemplateImage) {
+    // Get template image gradients
+    // NOTE: this is the full image gradient; in the compute Jacobian function
+    // will "crop"
+    cv::Mat templateGradX, templateGradY;
+    cv::Sobel(aTemplateImage, templateGradX, CV_32FC1, 1, 0);
+    cv::Sobel(aTemplateImage, templateGradY, CV_32FC1, 0, 1);
+
     // Get BBOX
     const bbox_t &bbox = getBBOX();
     const float bboxWidth = bbox[2] - bbox[0];
@@ -208,10 +222,14 @@ void ImageAlignment::computeJacobian(Eigen::MatrixXd &aJacobian,
                 0, x, 0, y, 0, 1;
 
             // Use getSubPixelValue instead
-            double delIx = getSubPixelValue(aTemplateGradX, x, y);
-            double delIy = getSubPixelValue(aTemplateGradY, x, y);
+            double delIx = getSubPixelValue(templateGradX, x, y);
+            double delIy = getSubPixelValue(templateGradY, x, y);
+            double subPix = getSubPixelValue(aTemplateImage, x, y);
 
-            // std::cout << std::setprecision(2) << std::fixed << "(" << x << ", "
+            std::cout << std::setprecision(2) << std::fixed << subPix << std::endl;
+
+            // std::cout << std::setprecision(2) << std::fixed << "(" << x << ",
+            // "
             //           << y << ") " << delIx << " " << delIy << std::endl;
             delI << delIx, delIy;
 
@@ -257,34 +275,26 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Mat templateImageFloat;
     templateImage.convertTo(templateImageFloat, CV_32FC1);
 
+    /*
     // Get actual template sub image
-    cv::Mat templateSubImage;
-    cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
-                      templateSubImage, CV_32FC1);
+    // cv::Mat templateSubImage;
+    // cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
+    //                   templateSubImage, CV_32FC1);
 
-    // printCVMat(templateSubImage, "templateSubImage");
+    // freopen("output_TImg_cpp.txt", "w", stdout);
+    // std::cout << std::setprecision(5) << std::fixed << "Template Sub Image: "
+    // << templateSubImage.size() << std::endl << templateSubImage << std::endl;
+    */
 
-    // Get template image gradients
-    cv::Mat templateGradX, templateGradY;
-    cv::Sobel(templateImageFloat, templateGradX, CV_32FC1, 1, 0);
-    cv::Sobel(templateImageFloat, templateGradY, CV_32FC1, 0, 1);
-
-    // Need to convert to float first
-
-    // cv::Mat display;
-    // cv::normalize(templateGradX, display, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-    // cv::imshow("templateImageGradX", display);
-    // cv::normalize(templateGradY, display, 0, 255, cv::NORM_MINMAX, CV_8UC1);
-    // cv::imshow("templateImageGradY", display);
-    // cv::waitKey(0);
-    // cv::destroyAllWindows();
-
-    /* Precompute Jacobian and Hessian */
-    // NOTE: This is the BBOX size; also note the need to add 1
+    /* Precompute Jacobian and obtain sub image */
+    // NOTE: This is the BBOX (not full image) size
     const size_t N_PIXELS = (bboxSize.width) * (bboxSize.height);
-    Eigen::MatrixXd Jacobian(N_PIXELS, 6);
 
-    computeJacobian(Jacobian, templateGradX, templateGradY);
+    // Make sure matrices are of right size before passing into function
+    Eigen::MatrixXd Jacobian(N_PIXELS, 6);
+    Eigen::MatrixXd templateSubImage(bboxSize.width, bboxSize.height);
+
+    computeJacobianAndSubImage(Jacobian, templateSubImage, templateImageFloat);
     return; // TODO: Remove this when not debugging
 
     // Cache the transposed matrix

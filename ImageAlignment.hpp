@@ -82,9 +82,9 @@ class ImageAlignment {
                             const double ay);
 
     // Track
-    void computeJacobian(Eigen::MatrixXd &aJacobian,
-                         const cv::Mat &aTemplateGradX,
-                         const cv::Mat &aTemplateGradY);
+    void computeJacobianAndSubImage(Eigen::MatrixXd &aJacobian,
+                                    Eigen::MatrixXd &aTemplateSubImage,
+                                    const cv::Mat &aTemplateImage);
 
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
                const size_t aMaxIters = 100);
