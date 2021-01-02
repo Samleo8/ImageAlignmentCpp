@@ -252,12 +252,12 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
             // Use getSubPixelValue instead
             double delIx = getSubPixelValue(templateGradX, x, y);
             double delIy = getSubPixelValue(templateGradY, x, y);
+
             // double subPix = getSubPixelValue(aTemplateImage, x, y);
+            // std::cout << std::setprecision(2) << std::fixed << subPix << " ";
 
-            std::cout << std::setprecision(2) << std::fixed << subPix << " ";
-
-            // std::cout << std::setprecision(2) << std::fixed << "(" << x << ",
-            // "
+            // std::cout << std::setprecision(2) << std::fixed << "(" << x <<
+            // ","
             //           << y << ") " << delIx << " " << delIy << std::endl;
             delI << delIx, delIy;
 
@@ -265,11 +265,11 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
             total++;
         }
 
-        std::cout << std::endl;
+        // std::cout << std::endl;
     }
 
-    freopen("output_jacobian_cpp.txt", "w", stdout);
-    std::cout << "Jacobian" << aJacobian << std::endl;
+    // freopen("output_jacobian_cpp.txt", "w", stdout);
+    // std::cout << "Jacobian" << aJacobian << std::endl;
 }
 
 /**
@@ -322,10 +322,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Make sure matrices are of right size before passing into function
     Eigen::MatrixXd Jacobian(N_PIXELS, 6);
-    Eigen::MatrixXd templateSubImage(bboxWidth, bboxHeight);
+    // Eigen::MatrixXd templateSubImage(bboxWidth, bboxHeight);
 
     computeJacobian(templateImageFloat, Jacobian);
-    return; // TODO: Remove this when not debugging
 
     // Cache the transposed matrix
     Eigen::MatrixXd JacobianTransposed(6, N_PIXELS);
@@ -356,9 +355,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
                      warpMatCV);
 
-        std::cout << currentImage.depth() << " " << warpMatCV.depth()
-                  << std::endl;
-
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
@@ -380,9 +376,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
-        std::cout << "deltaP" << deltaP << std::endl;
-        std::cout << "Hessian" << Hessian << "HessianInverse"
-                  << Hessian.inverse() << std::endl;
+        std::cout << "deltaP\n" << deltaP << std::endl << std::endl;
+        std::cout << "Hessian\n"
+                  << Hessian << "HessianInverse" << Hessian.inverse()
+                  << std::endl
+                  << std::endl;
 
         // Reshape data in order to inverse matrix
         Eigen::Matrix3d warpMatDelta;
@@ -392,7 +390,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             0, 0, 1;
 
         Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
-        std::cout << "deltaInverse" << warpMatDeltaInverse << std::endl;
+        std::cout << "deltaInverse:\n"
+                  << warpMatDeltaInverse << std::endl
+                  << std::endl;
 
         warpMat *= warpMatDeltaInverse;
 
@@ -410,7 +410,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     Eigen::MatrixXd newBBOXHomo = warpMat * bboxMat;
 
-    std::cout << "bbox:" << newBBOXHomo << std::endl;
+    std::cout << "bbox:\n" << newBBOXHomo << std::endl << std::endl;
+
     setBBOX(newBBOXHomo(0, 0), newBBOXHomo(1, 0), newBBOXHomo(0, 1),
             newBBOXHomo(1, 1));
 }

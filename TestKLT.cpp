@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
         image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
 
         tracker.track(image);
-        tracker.displayTemplateImage(false);
+        // tracker.displayTemplateImage(false);
         tracker.displayCurrentImage(true);
 
         printBBOX(tracker.getBBOX());
