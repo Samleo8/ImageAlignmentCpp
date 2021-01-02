@@ -43,7 +43,7 @@ class ImageAlignment {
     /// @brief Current Image (current frame)
     cv::Mat mCurrentImage;
 
-    void printCVMat(cv::Mat &aMat, std::string aName = "CV Matrix");
+    void printCVMat(const cv::Mat &aMat, const std::string &aName = "CV Matrix");
 
   public:
     // Constructor
@@ -71,6 +71,12 @@ class ImageAlignment {
     void setCurrentImage(const cv::Mat &aImg);
 
     // Display with (or without) BBOX
+    void displayTemplateImage(const bool aWithBBOX = true,
+                              const std::string &aTitle = "Template Image",
+                              const cv::Scalar &aBBOXColour = cv::Scalar(0, 0,
+                                                                         255),
+                              const int aThickness = 3);
+
     void displayCurrentImage(const bool aWithBBOX = true,
                              const std::string &aTitle = "Current Image",
                              const cv::Scalar &aBBOXColour = cv::Scalar(0, 0,

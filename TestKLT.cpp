@@ -51,8 +51,8 @@ int main(int argc, char *argv[]) {
     // Landing scene test
     tracker.setBBOX(440.0f, 80.0f, 560.0f, 140.0f);
 
-    tracker.displayCurrentImage(true);
-    cv::waitKey(0);
+    // tracker.displayCurrentImage(true);
+    // cv::waitKey(0);
 
     // Loop through image frames
     for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
@@ -63,6 +63,7 @@ int main(int argc, char *argv[]) {
         image = cv::imread(imagePath, cv::IMREAD_GRAYSCALE);
 
         tracker.track(image);
+        tracker.displayTemplateImage(true);
         tracker.displayCurrentImage(true);
 
         printBBOX(tracker.getBBOX());
