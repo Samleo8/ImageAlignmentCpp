@@ -131,7 +131,7 @@ void ImageAlignment::setTemplateImage(const cv::Mat &aImg) {
  * @return cv::Mat current image
  */
 cv::Mat &ImageAlignment::getCurrentImage() {
-    return mTemplateImage;
+    return mCurrentImage;
 }
 
 /**
@@ -139,7 +139,7 @@ cv::Mat &ImageAlignment::getCurrentImage() {
  * @param[in] aImg Current image
  */
 void ImageAlignment::setCurrentImage(const cv::Mat &aImg) {
-    mTemplateImage = aImg;
+    mCurrentImage = aImg;
 }
 
 /**
