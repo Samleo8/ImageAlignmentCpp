@@ -43,7 +43,8 @@ class ImageAlignment {
     /// @brief Current Image (current frame)
     cv::Mat mCurrentImage;
 
-    void printCVMat(const cv::Mat &aMat, const std::string &aName = "CV Matrix");
+    void printCVMat(const cv::Mat &aMat,
+                    const std::string &aName = "CV Matrix");
 
   public:
     // Constructor
@@ -88,9 +89,8 @@ class ImageAlignment {
                             const double ay);
 
     // Track
-    void computeJacobianAndSubImage(Eigen::MatrixXd &aJacobian,
-                                    Eigen::MatrixXd &aTemplateSubImage,
-                                    const cv::Mat &aTemplateImage);
+    void computeJacobian(const cv::Mat &aTemplateImage,
+                         Eigen::MatrixXd &aJacobian);
 
     void track(const cv::Mat &aNewImage, const float aThreshold = 0.01875,
                const size_t aMaxIters = 100);

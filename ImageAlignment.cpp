@@ -152,9 +152,9 @@ void ImageAlignment::setCurrentImage(const cv::Mat &aImg) {
  * @param[in] aThickness Thickness of bounding box line
  */
 void ImageAlignment::displayTemplateImage(const bool aWithBBOX,
-                                         const std::string &aTitle,
-                                         const cv::Scalar &aBBOXColour,
-                                         const int aThickness) {
+                                          const std::string &aTitle,
+                                          const cv::Scalar &aBBOXColour,
+                                          const int aThickness) {
     cv::Mat disImg(getTemplateImage());
     cv::cvtColor(disImg, disImg, cv::COLOR_GRAY2RGB);
 
@@ -207,15 +207,14 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
  * @see ImageAlignment::track()
  * @see ImageAlignment::getSubPixelValue()
  *
+ *  @param[in] aTemplateImage Template image (cv input)
  * @param[out] aJacobian Jacobian matrix (Eigen output)
- * @param[out] aTemplateSubImage Sub image matrix (Eigen output)
- * @param[in] aTemplateImage Template image (cv input)
- * 
- * @pre output params should be of type double, and should also be of the correct BBOX size
+ *
+ * @pre output params should be of type double, and should also be of the
+ * correct BBOX size
  */
-void ImageAlignment::computeJacobianAndSubImage(
-    Eigen::MatrixXd &aJacobian, Eigen::MatrixXd &aTemplateSubImage,
-    const cv::Mat &aTemplateImage) {
+void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
+                                     Eigen::MatrixXd &aJacobian) {
     // Get template image gradients
     // NOTE: this is the full image gradient; in the compute Jacobian function
     // will "crop"
@@ -253,7 +252,7 @@ void ImageAlignment::computeJacobianAndSubImage(
             // Use getSubPixelValue instead
             double delIx = getSubPixelValue(templateGradX, x, y);
             double delIy = getSubPixelValue(templateGradY, x, y);
-            double subPix = getSubPixelValue(aTemplateImage, x, y);
+            // double subPix = getSubPixelValue(aTemplateImage, x, y);
 
             std::cout << std::setprecision(2) << std::fixed << subPix << " ";
 
@@ -306,16 +305,14 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Mat templateImageFloat;
     templateImage.convertTo(templateImageFloat, CV_32FC1);
 
-    /*
     // Get actual template sub image
-    // cv::Mat templateSubImage;
-    // cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
-    //                   templateSubImage, CV_32FC1);
+    cv::Mat templateSubImage;
+    cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
+                      templateSubImage, CV_32FC1);
 
     // freopen("output_TImg_cpp.txt", "w", stdout);
     // std::cout << std::setprecision(5) << std::fixed << "Template Sub Image: "
     // << templateSubImage.size() << std::endl << templateSubImage << std::endl;
-    */
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size
@@ -327,7 +324,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::MatrixXd Jacobian(N_PIXELS, 6);
     Eigen::MatrixXd templateSubImage(bboxWidth, bboxHeight);
 
-    computeJacobianAndSubImage(Jacobian, templateSubImage, templateImageFloat);
+    computeJacobian(templateImageFloat, Jacobian);
     return; // TODO: Remove this when not debugging
 
     // Cache the transposed matrix
@@ -340,8 +337,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
     // Warped images
-    cv::Mat warpedImage;
-    Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
+    cv::Mat warpedImage, warpedSubImage;
+    // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
 
     cv::Mat warpMatCV(2, 3, CV_64F);
 
@@ -365,12 +362,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
-        // cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
-        //                   CV_32F);
+        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
+                          CV_32F);
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
-        errorVector = warpedSubImage - templateSubImage;
+        cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
 
         // Weight for robust M-estimator
