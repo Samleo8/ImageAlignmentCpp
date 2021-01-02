@@ -155,8 +155,8 @@ void ImageAlignment::displayTemplateImage(const bool aWithBBOX,
                                           const std::string &aTitle,
                                           const cv::Scalar &aBBOXColour,
                                           const int aThickness) {
-    cv::Mat disImg(getTemplateImage());
-    cv::cvtColor(disImg, disImg, cv::COLOR_GRAY2RGB);
+    cv::Mat disImg;
+    convertImageForDisplay(getTemplateImage(), disImg);
 
     // Draw BBOX
     if (aWithBBOX) {
@@ -183,8 +183,8 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
                                          const std::string &aTitle,
                                          const cv::Scalar &aBBOXColour,
                                          const int aThickness) {
-    cv::Mat disImg(getCurrentImage());
-    cv::cvtColor(disImg, disImg, cv::COLOR_GRAY2RGB);
+    cv::Mat disImg;
+    convertImageForDisplay(getCurrentImage(), disImg);
 
     // Draw BBOX
     if (aWithBBOX) {
@@ -196,6 +196,20 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
     }
 
     cv::imshow(aTitle, disImg);
+}
+
+/**
+ * @brief Convert a cv::Mat image for display
+ * @post Destination image will be normalised, grayscale
+ *
+ * @param[in] aSrc Source image
+ * @param[out] aDest Destination image
+ */
+void ImageAlignment::convertImageForDisplay(const cv::Mat &aSrc,
+                                            cv::Mat &aDest) {
+    aSrc.convertTo(aDest, CV_8UC1);
+    cv::cvtColor(aDest, aDest, cv::COLOR_GRAY2RGB);
+    cv::normalize(aDest, aDest, 0, 255, cv::NORM_MINMAX, CV_8UC1);
 }
 
 /**
@@ -310,9 +324,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
                       templateSubImage, CV_32FC1);
 
-    // freopen("output_TImg_cpp.txt", "w", stdout);
-    // std::cout << std::setprecision(5) << std::fixed << "Template Sub Image: "
-    // << templateSubImage.size() << std::endl << templateSubImage << std::endl;
+    freopen("output_TImg_cpp.txt", "w", stdout);
+    std::cout << std::setprecision(5) << std::fixed
+              << "Template Sub Image: " << templateSubImage.size() << std::endl
+              << templateSubImage << std::endl;
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size

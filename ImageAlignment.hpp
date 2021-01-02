@@ -84,6 +84,8 @@ class ImageAlignment {
                                                                         255),
                              const int aThickness = 3);
 
+    void convertImageForDisplay(const cv::Mat &aSrc, cv::Mat &aDest);
+
     // Get sub pixel value of image
     double getSubPixelValue(const cv::Mat &aImg, const double ax,
                             const double ay);
