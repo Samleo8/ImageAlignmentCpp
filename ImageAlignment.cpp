@@ -324,10 +324,16 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
                       templateSubImage, CV_32FC1);
 
+    // TODO: Remove after debugging
     freopen("output_TImg_cpp.txt", "w", stdout);
     std::cout << std::setprecision(5) << std::fixed
               << "Template Sub Image: " << templateSubImage.size() << std::endl
               << templateSubImage << std::endl;
+
+    cv::Mat disImage;
+    convertImageForDisplay(templateSubImage, disImage);
+    cv::imshow("Template sub image", disImage);
+    cv::waitKey(0);
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size
