@@ -390,12 +390,14 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         convertImageForDisplay(warpedSubImage, disImage);
         cv::imshow("warped sub image", disImage);
 
-        cv::waitKey(0);
-
         // Obtain errorImage which will then be converted to flattened image
         // vector;
         cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
+
+        std::cout << "Err vec" << errorVector << std::endl;
+
+        cv::waitKey(0);
 
         // Weight for robust M-estimator
         // TODO: Use actual weights, dummy identity for now
