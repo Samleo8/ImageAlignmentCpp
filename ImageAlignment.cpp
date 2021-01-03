@@ -301,7 +301,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // Set new images
     //  - "Current" image becomes template
     //  - New image becomes current image
-    const cv::Mat &templateImage = getCurrentImage();
+    const cv::Mat templateImage = getCurrentImage();
     const cv::Mat &currentImage = aNewImage;
 
     const cv::Size2d IMAGE_SIZE = currentImage.size();
@@ -309,8 +309,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     setTemplateImage(templateImage);
     setCurrentImage(currentImage);
 
-    assert(templateImage == getTemplateImage())
-    assert(currentImage == getCurrentImage())
+    // assert(templateImage == getTemplateImage())
+    // assert(currentImage == getCurrentImage())
 
     // Get BBOX
     const bbox_t &bbox = getBBOX();
