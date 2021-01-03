@@ -436,7 +436,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     Eigen::MatrixXd newBBOXHomo = warpMat * bboxMat;
 
-    std::cout << "bbox:\n" << newBBOXHomo << std::endl << std::endl;
+    // std::cout << "bbox:\n" << newBBOXHomo << std::endl << std::endl;
 
     setBBOX(newBBOXHomo(0, 0), newBBOXHomo(1, 0), newBBOXHomo(0, 1),
             newBBOXHomo(1, 1));
