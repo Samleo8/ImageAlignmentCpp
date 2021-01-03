@@ -325,15 +325,15 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
                       templateSubImage, CV_32FC1);
 
     // TODO: Remove after debugging
-    freopen("output_TImg_cpp.txt", "w", stdout);
-    std::cout << std::setprecision(5) << std::fixed
-              << "Template Sub Image: " << templateSubImage.size() << std::endl
-              << templateSubImage << std::endl;
+    // freopen("output_TImg_cpp.txt", "w", stdout);
+    // std::cout << std::setprecision(5) << std::fixed
+    //           << "Template Sub Image: " << templateSubImage.size() << std::endl
+    //           << templateSubImage << std::endl;
 
-    cv::Mat disImage;
-    convertImageForDisplay(templateSubImage, disImage);
-    cv::imshow("Template sub image", disImage);
-    cv::waitKey(0);
+    // cv::Mat disImage;
+    // convertImageForDisplay(templateSubImage, disImage);
+    // cv::imshow("Template sub image", disImage);
+    // displayTemplateImage();
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size
@@ -378,6 +378,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
+        cv::imshow("warped", warpedImage); 
+        cv::waitKey(0);
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
