@@ -378,11 +378,19 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
+
+        std::cout << "Warp Matrix" << warpMatCV << std::endl;
         cv::imshow("warped", warpedImage); 
-        cv::waitKey(0);
+        displayTemplateImage();
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
+
+        cv::Mat disImage;
+        convertImageForDisplay(warpedSubImage, disImage);
+        cv::imshow("warped sub image", disImage);
+
+        cv::waitKey(0);
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
