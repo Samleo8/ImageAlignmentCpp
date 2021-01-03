@@ -382,25 +382,15 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
-        std::cout << "Warp Matrix" << warpMatCV << std::endl;
-        cv::imshow("warped", warpedImage); 
-        displayTemplateImage();
-
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
-
-        cv::Mat disImage;
-        convertImageForDisplay(warpedSubImage, disImage);
-        cv::imshow("warped sub image", disImage);
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
         cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
 
-        std::cout << "Err vec" << errorVector.transpose() << std::endl;
-
-        cv::waitKey(0);
+        // std::cout << "Err vec" << errorVector.transpose() << std::endl;
 
         // Weight for robust M-estimator
         // TODO: Use actual weights, dummy identity for now
@@ -412,11 +402,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
-        std::cout << "deltaP\n" << deltaP << std::endl << std::endl;
-        std::cout << "Hessian\n"
-                  << Hessian << "HessianInverse" << Hessian.inverse()
-                  << std::endl
-                  << std::endl;
+        // std::cout << "deltaP\n" << deltaP << std::endl << std::endl;
+        // std::cout << "Hessian\n"
+        //           << Hessian << "HessianInverse" << Hessian.inverse()
+        //           << std::endl
+        //           << std::endl;
 
         // Reshape data in order to inverse matrix
         Eigen::Matrix3d warpMatDelta;
@@ -426,9 +416,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             0, 0, 1;
 
         Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
-        std::cout << "deltaInverse:\n"
-                  << warpMatDeltaInverse << std::endl
-                  << std::endl;
+        // std::cout << "deltaInverse:\n"
+        //           << warpMatDeltaInverse << std::endl
+        //           << std::endl;
 
         warpMat *= warpMatDeltaInverse;
 
