@@ -307,7 +307,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     const cv::Size2d IMAGE_SIZE = currentImage.size();
 
     setTemplateImage(templateImage);
-    setCurrentImage(currentImage);
+    setCurrentImage(aNewImage);
 
     // assert(templateImage == getTemplateImage())
     // assert(currentImage == getCurrentImage())
@@ -330,7 +330,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     // TODO: Remove after debugging
     // freopen("output_TImg_cpp.txt", "w", stdout);
     // std::cout << std::setprecision(5) << std::fixed
-    //           << "Template Sub Image: " << templateSubImage.size() << std::endl
+    //           << "Template Sub Image: " << templateSubImage.size() <<
+    //           std::endl
     //           << templateSubImage << std::endl;
 
     // cv::Mat disImage;
@@ -384,11 +385,17 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
-
+        
         // Obtain errorImage which will then be converted to flattened image
         // vector;
         cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
+
+        // TODO: Remove after debug; currently displays image
+        cv::Mat disImage;
+        convertImageForDisplay(warpedImage, disImage);
+        cv::imshow("Warped sub image", disImage);
+        cv::waitKey(1);
 
         // std::cout << "Err vec" << errorVector.transpose() << std::endl;
 
@@ -402,7 +409,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
-        // std::cout << "deltaP\n" << deltaP << std::endl << std::endl;
+        std::cout << "deltaP\n" << deltaP.transpose() << std::endl << std::endl;
         // std::cout << "Hessian\n"
         //           << Hessian << "HessianInverse" << Hessian.inverse()
         //           << std::endl
@@ -415,7 +422,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
             deltaP(1), 1 + deltaP(3), deltaP(5),             //
             0, 0, 1;
 
-        Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
+        const Eigen::Matrix3d warpMatDeltaInverse = warpMatDelta.inverse();
         // std::cout << "deltaInverse:\n"
         //           << warpMatDeltaInverse << std::endl
         //           << std::endl;
