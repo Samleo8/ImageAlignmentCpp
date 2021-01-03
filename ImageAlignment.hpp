@@ -65,10 +65,10 @@ class ImageAlignment {
                  const float aRight);
 
     // Get and Set Images
-    cv::Mat &getTemplateImage();
+    const cv::Mat &getTemplateImage();
     void setTemplateImage(const cv::Mat &aImg);
 
-    cv::Mat &getCurrentImage();
+    const cv::Mat &getCurrentImage();
     void setCurrentImage(const cv::Mat &aImg);
 
     // Display with (or without) BBOX

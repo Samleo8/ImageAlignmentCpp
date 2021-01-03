@@ -113,7 +113,7 @@ void ImageAlignment::setBBOX(const float aTop, const float aLeft,
  *
  * @return cv::Mat template image
  */
-cv::Mat &ImageAlignment::getTemplateImage() {
+const cv::Mat &ImageAlignment::getTemplateImage() {
     return mTemplateImage;
 }
 
@@ -130,7 +130,7 @@ void ImageAlignment::setTemplateImage(const cv::Mat &aImg) {
  *
  * @return cv::Mat current image
  */
-cv::Mat &ImageAlignment::getCurrentImage() {
+const cv::Mat &ImageAlignment::getCurrentImage() {
     return mCurrentImage;
 }
 
@@ -309,6 +309,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     setTemplateImage(templateImage);
     setCurrentImage(currentImage);
 
+    assert(templateImage == getTemplateImage())
+    assert(currentImage == getCurrentImage())
+
     // Get BBOX
     const bbox_t &bbox = getBBOX();
     const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
@@ -395,7 +398,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
 
-        std::cout << "Err vec" << errorVector << std::endl;
+        std::cout << "Err vec" << errorVector.transpose() << std::endl;
 
         cv::waitKey(0);
 
