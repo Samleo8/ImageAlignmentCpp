@@ -334,10 +334,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     //           std::endl
     //           << templateSubImage << std::endl;
 
-    // cv::Mat disImage;
-    // convertImageForDisplay(templateSubImage, disImage);
-    // cv::imshow("Template sub image", disImage);
-    // displayTemplateImage();
+    cv::Mat disImage;
+    convertImageForDisplay(templateSubImage, disImage);
+    cv::imshow("Template sub image", disImage);
+    displayTemplateImage();
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size
@@ -380,6 +380,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
                      warpMatCV);
 
+        std::cout << "Warp matrix" << warpMatCV << std::endl << warpMatTrunc << std::endl;
+
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
@@ -395,7 +397,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         cv::Mat disImage;
         convertImageForDisplay(warpedImage, disImage);
         cv::imshow("Warped sub image", disImage);
-        cv::waitKey(1);
+        cv::waitKey(2);
 
         // std::cout << "Err vec" << errorVector.transpose() << std::endl;
 
@@ -409,7 +411,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
-        std::cout << "deltaP\n" << deltaP.transpose() << std::endl << std::endl;
+        // std::cout << "deltaP\n" << deltaP.transpose() << std::endl << std::endl;
         // std::cout << "Hessian\n"
         //           << Hessian << "HessianInverse" << Hessian.inverse()
         //           << std::endl
