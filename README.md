@@ -25,7 +25,7 @@ cmake ..
 
 3. Make and run the application
 ```bash
-make .
+make
 ./TestKLT
 ```
 
