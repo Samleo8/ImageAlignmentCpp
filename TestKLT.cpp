@@ -49,10 +49,11 @@ int main(int argc, char *argv[]) {
     ImageAlignment tracker(image);
 
     // Landing scene test
+    std::cout << "Press any key to continue. Press Q to quit." << std::endl << std::endl;
+
     tracker.setBBOX(440.0f, 80.0f, 560.0f, 140.0f);
 
-    // tracker.displayCurrentImage(true);
-    // cv::waitKey(0);
+    tracker.displayCurrentImage(true);
 
     // Loop through image frames
     for (imageCnt = startCnt + 1; imageCnt < endCnt; imageCnt++) {
@@ -68,7 +69,7 @@ int main(int argc, char *argv[]) {
 
         printBBOX(tracker.getBBOX());
 
-        char c = cv::waitKey(1);
+        char c = cv::waitKey(0);
         if (c == 'q') {
             return 0;
         }
