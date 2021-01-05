@@ -357,44 +357,46 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     // auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
-    // Warped images
-    cv::Mat warpedImage, warpedSubImage;
-    // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
-
-    cv::Mat warpMatCV(2, 3, CV_64F);
-
-    // Error Images
-    Eigen::MatrixXd errorVector; // NOTE: dynamic, will flatten later
-
-    // Robust M Estimator Weights
-    Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
-
-    // Delta P vector
-    Eigen::VectorXd deltaP(6);
-
     for (size_t i = 0; i < aMaxIters; i++) {
-        // Convert to cv::Mat
-        cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMat.topRows(2)),
-                     warpMatCV);
+        // Warped images
+        cv::Mat warpedImage, warpedSubImage;
+        // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
 
-        // std::cout << "Warp matrix\n" << warpMat << std::endl << warpMatTrunc << "\n\n";
+        // Error Images
+        Eigen::MatrixXd errorVector; // NOTE: dynamic, will flatten later
+
+        // Convert to cv::Mat
+        cv::Mat warpMatCV(2, 3, CV_64F);
+        cv::eigen2cv(
+            static_cast<Eigen::Matrix<double, 2, 3>>(warpMat.topRows(2)),
+            warpMatCV);
+
+        // std::cout << "Warp matrix\n" << warpMat << std::endl << warpMatTrunc
+        // << "\n\n";
 
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
-        
+
+        // Robust M Estimator Weights
+        Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
+
+        // Delta P vector
+        Eigen::VectorXd deltaP(6);
+
         // Obtain errorImage which will then be converted to flattened image
         // vector;
-        cv::cv2eigen(warpedSubImage - templateSubImage, errorVector);
+        const cv::Mat errorImage = warpedSubImage - templateSubImage;
+        cv::cv2eigen(errorImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
 
-        // TODO: Remove after debug; currently displays image
-        cv::Mat disImage;
-        convertImageForDisplay(warpedImage, disImage);
-        cv::imshow("Warped sub image", disImage);
-        cv::waitKey(2);
+        // TODO: Remove after debug; currently displays warped image
+        // cv::Mat disImage;
+        // convertImageForDisplay(warpedImage, disImage);
+        // cv::imshow("Warped sub image", disImage);
+        // cv::waitKey(2);
 
         // std::cout << "Err vec" << errorVector.transpose() << std::endl;
 
@@ -408,8 +410,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Solve for new deltaP
         deltaP = Hessian.ldlt().solve(vectorB);
-        // std::cout << "deltaP\n" << deltaP.transpose() << std::endl << std::endl;
-        // std::cout << "Hessian\n"
+        // std::cout << "deltaP\n" << deltaP.transpose() << std::endl <<
+        // std::endl; std::cout << "Hessian\n"
         //           << Hessian << "HessianInverse" << Hessian.inverse()
         //           << std::endl
         //           << std::endl;
