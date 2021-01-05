@@ -307,10 +307,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     const cv::Size2d IMAGE_SIZE = currentImage.size();
 
     setTemplateImage(templateImage);
-    setCurrentImage(aNewImage);
-
-    // assert(templateImage == getTemplateImage())
-    // assert(currentImage == getCurrentImage())
+    setCurrentImage(currentImage);
 
     // Get BBOX
     const bbox_t &bbox = getBBOX();
@@ -334,10 +331,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     //           std::endl
     //           << templateSubImage << std::endl;
 
-    cv::Mat disImage;
-    convertImageForDisplay(templateSubImage, disImage);
-    cv::imshow("Template sub image", disImage);
-    displayTemplateImage();
+    // cv::Mat disImage;
+    // convertImageForDisplay(templateSubImage, disImage);
+    // cv::imshow("Template sub image", disImage);
+    // displayTemplateImage();
 
     /* Precompute Jacobian and obtain sub image */
     // NOTE: This is the BBOX (not full image) size
@@ -358,7 +355,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Iteratively find best match */
     // Warp matrix (affine warp)
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
-    auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
+    // auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
     // Warped images
     cv::Mat warpedImage, warpedSubImage;
@@ -377,10 +374,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // Convert to cv::Mat
-        cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
+        cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMat.topRows(2)),
                      warpMatCV);
 
-        std::cout << "Warp matrix" << warpMatCV << std::endl << warpMatTrunc << std::endl;
+        // std::cout << "Warp matrix\n" << warpMat << std::endl << warpMatTrunc << "\n\n";
 
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
