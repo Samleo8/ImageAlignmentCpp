@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 
         printBBOX(tracker.getBBOX());
 
-        char c = cv::waitKey(0);
+        char c = cv::waitKey(1);
         if (c == 'q') {
             return 0;
         }
