@@ -14,7 +14,7 @@ git clone https://github.com/Samleo8/ImageAlignmentCpp
 
 1. Install dependencies
 
-See #dependencies.
+  See [below](#dependencies).
 
 2. Build with `cmake`
 
