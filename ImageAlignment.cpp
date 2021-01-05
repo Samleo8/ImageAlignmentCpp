@@ -277,16 +277,16 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
             // double delIx = getSubPixelValue(templateGradX, x, y);
             // double delIy = getSubPixelValue(templateGradY, x, y);
 
+            // Try using cv::getSubPix
+            double delIx = templateGradXSub.at<float>(i, j);
+            double delIy = templateGradYSub.at<float>(i, j);
+
             // double subPix = getSubPixelValue(aTemplateImage, x, y);
             // std::cout << std::setprecision(2) << std::fixed << subPix << " ";
 
             // std::cout << std::setprecision(2) << std::fixed << "(" << x <<
             // ","
             //           << y << ") " << delIx << " " << delIy << std::endl;
-
-            // Try using cv::getSubPix
-            double delIx = templateGradXSub.at<float>(j, i);
-            double delIy = templateGradYSub.at<float>(j, i);
 
             delI << delIx, delIy;
 
