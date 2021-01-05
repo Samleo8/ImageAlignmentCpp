@@ -355,7 +355,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Iteratively find best match */
     // Warp matrix (affine warp)
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
-    // auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
+    auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // Warped images
@@ -367,9 +367,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Convert to cv::Mat
         cv::Mat warpMatCV(2, 3, CV_64F);
-        cv::eigen2cv(
-            static_cast<Eigen::Matrix<double, 2, 3>>(warpMat.topRows(2)),
-            warpMatCV);
+        cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
+                     warpMatCV);
 
         // std::cout << "Warp matrix\n" << warpMat << std::endl << warpMatTrunc
         // << "\n\n";
