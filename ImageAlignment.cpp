@@ -245,6 +245,16 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
     Eigen::MatrixXd dWdp(2, 6);
     Eigen::RowVector2d delI(2);
 
+    // Use OpenCV subpixel rect to be consistent
+    cv::Mat templateGradXSub, templateGradYSub;
+
+    const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
+                                 (bbox[3] + bbox[1]) / 2);
+
+    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradXSub);
+    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradYSub);
+
     // Loop over everything, linearly-spaced
     // https://stackoverflow.com/questions/27028226/python-linspace-in-c
     size_t total = 0;
@@ -263,9 +273,9 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
             dWdp << x, 0, y, 0, 1, 0, //
                 0, x, 0, y, 0, 1;
 
-            // Use getSubPixelValue instead
-            double delIx = getSubPixelValue(templateGradX, x, y);
-            double delIy = getSubPixelValue(templateGradY, x, y);
+            // TODO: Use getSubPixelValue instead
+            // double delIx = getSubPixelValue(templateGradX, x, y);
+            // double delIy = getSubPixelValue(templateGradY, x, y);
 
             // double subPix = getSubPixelValue(aTemplateImage, x, y);
             // std::cout << std::setprecision(2) << std::fixed << subPix << " ";
@@ -273,6 +283,11 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
             // std::cout << std::setprecision(2) << std::fixed << "(" << x <<
             // ","
             //           << y << ") " << delIx << " " << delIy << std::endl;
+
+            // Try using cv::getSubPix
+            double delIx = templateGradXSub.at<float>(j, i);
+            double delIy = templateGradYSub.at<float>(j, i);
+
             delI << delIx, delIy;
 
             aJacobian.row(total) << delI * dWdp;
