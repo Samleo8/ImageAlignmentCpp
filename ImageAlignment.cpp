@@ -376,9 +376,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
+    // Warped images
+    cv::Mat warpedImage, warpedSubImage;
+
     for (size_t i = 0; i < aMaxIters; i++) {
-        // Warped images
-        cv::Mat warpedImage, warpedSubImage;
         // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
 
         // Error Images
@@ -408,6 +409,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
+        // warpedSubImage.convertTo(warpedSubImage, CV_64FC1);
         const cv::Mat errorImage = warpedSubImage - templateSubImage;
         cv::cv2eigen(errorImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
