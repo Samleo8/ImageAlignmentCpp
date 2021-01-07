@@ -78,7 +78,7 @@ void ImageAlignment::init(const cv::Mat &aImage, const bbox_t &aBbox) {
  *
  * @return bbox_t current BBOX
  */
-bbox_t &ImageAlignment::getBBOX() {
+const bbox_t &ImageAlignment::getBBOX() {
     return mBbox;
 }
 
@@ -160,7 +160,7 @@ void ImageAlignment::displayTemplateImage(const bool aWithBBOX,
 
     // Draw BBOX
     if (aWithBBOX) {
-        bbox_t &bbox = getBBOX();
+        const bbox_t &bbox = getBBOX();
         cv::Point2f topPt(bbox[0], bbox[1]);
         cv::Point2f bottomPt(bbox[2], bbox[3]);
 
@@ -188,7 +188,7 @@ void ImageAlignment::displayCurrentImage(const bool aWithBBOX,
 
     // Draw BBOX
     if (aWithBBOX) {
-        bbox_t &bbox = getBBOX();
+        const bbox_t &bbox = getBBOX();
         cv::Point2f topPt(bbox[0], bbox[1]);
         cv::Point2f bottomPt(bbox[2], bbox[3]);
 
@@ -252,8 +252,8 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
     const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
                                  (bbox[3] + bbox[1]) / 2);
 
-    cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradXSub);
-    cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradYSub);
+    // cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradXSub);
+    // cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradYSub);
 
     // Loop over everything, linearly-spaced
     // https://stackoverflow.com/questions/27028226/python-linspace-in-c
@@ -274,12 +274,12 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
                 0, x, 0, y, 0, 1;
 
             // TODO: Use getSubPixelValue instead
-            // double delIx = getSubPixelValue(templateGradX, x, y);
-            // double delIy = getSubPixelValue(templateGradY, x, y);
+            double delIx = getSubPixelValue(templateGradX, x, y);
+            double delIy = getSubPixelValue(templateGradY, x, y);
 
             // Try using cv::getSubPix
-            double delIx = templateGradXSub.at<float>(i, j);
-            double delIy = templateGradYSub.at<float>(i, j);
+            // double delIx = templateGradXSub.at<float>(i, j);
+            // double delIy = templateGradYSub.at<float>(i, j);
 
             // double subPix = getSubPixelValue(aTemplateImage, x, y);
             // std::cout << std::setprecision(2) << std::fixed << subPix << " ";
@@ -551,4 +551,104 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
     // Return weighted pixel
     return tlWeight * tlPixel + trWeight * trPixel + blWeight * blPixel +
            brWeight * brPixel;
+}
+
+/**
+ * @brief Get sub pixel values of a rectangle. Uses stored BBOX. To use a custom
+ * bbox, use the other overloaded function.
+ *
+ * Sub pixel values are obtained using ImageAlignment::getSubPixelValue()
+ *
+ * @see ImageAlignment::getSubPixelValue()
+ *
+ * @param[in] aImg Input image
+ * @param[out] aSubImg Output subimage
+ */
+void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg) {
+    // Get template image gradients
+    // NOTE: this is the full image gradient; in the compute Jacobian function
+    // will "crop"
+    cv::Mat templateGradX, templateGradY;
+    cv::Sobel(aTemplateImage, templateGradX, CV_32FC1, 1, 0);
+    cv::Sobel(aTemplateImage, templateGradY, CV_32FC1, 0, 1);
+
+    // Get BBOX
+    const bbox_t &bbox = getBBOX();
+    const float bboxWidth = bbox[2] - bbox[0];
+    const float bboxHeight = bbox[3] - bbox[1];
+
+    // Initialise matrices
+    Eigen::MatrixXd dWdp(2, 6);
+    Eigen::RowVector2d delI(2);
+
+    // Use OpenCV subpixel rect to be consistent
+    cv::Mat templateGradXSub, templateGradYSub;
+
+    const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
+                                 (bbox[3] + bbox[1]) / 2);
+
+    // cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradXSub);
+    // cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradYSub);
+
+    // Loop over everything, linearly-spaced
+    // https://stackoverflow.com/questions/27028226/python-linspace-in-c
+    size_t total = 0;
+    const int nX = int(bboxWidth);
+    const int nY = int(bboxHeight);
+
+    const float deltaX = bboxWidth / (nX - 1);
+    const float deltaY = bboxHeight / (nY - 1);
+
+    for (int i = 0; i < nY; i++) {
+        float y = bbox[1] + deltaY * i;
+        for (int j = 0; j < nX; j++) {
+            float x = bbox[0] + deltaX * j;
+
+            // Create dWdp matrix
+            dWdp << x, 0, y, 0, 1, 0, //
+                0, x, 0, y, 0, 1;
+
+            // TODO: Use getSubPixelValue instead
+            double delIx = getSubPixelValue(templateGradX, x, y);
+            double delIy = getSubPixelValue(templateGradY, x, y);
+
+            // Try using cv::getSubPix
+            // double delIx = templateGradXSub.at<float>(i, j);
+            // double delIy = templateGradYSub.at<float>(i, j);
+
+            // double subPix = getSubPixelValue(aTemplateImage, x, y);
+            // std::cout << std::setprecision(2) << std::fixed << subPix << " ";
+
+            // std::cout << std::setprecision(2) << std::fixed << "(" << x <<
+            // ","
+            //           << y << ") " << delIx << " " << delIy << std::endl;
+
+            delI << delIx, delIy;
+
+            aJacobian.row(total) << delI * dWdp;
+            total++;
+        }
+
+        // std::cout << std::endl;
+    }
+
+    // freopen("output_jacobian_cpp.txt", "w", stdout);
+    // std::cout << "Jacobian" << aJacobian << std::endl;
+}
+
+/**
+ * @brief Get sub pixel values of a rectangle. Uses stored BBOX. To use a custom
+ * bbox, use the other overloaded function.
+ *
+ * Sub pixel values are obtained using ImageAlignment::getSubPixelValue()
+ *
+ * @see ImageAlignment::getSubPixelValue()
+ *
+ * @param[in] aImg Input image
+ * @param[out] aSubImg Output subimage
+ */
+void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg) {
+    const bbox_t &bbox = getBBOX();
+    getSubPixelRect(aImg, aSubImg, bbox);
 }

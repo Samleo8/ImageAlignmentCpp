@@ -59,7 +59,7 @@ class ImageAlignment {
     void init(const cv::Mat &aImage, const bbox_t &aBbox);
 
     // BBOX Interface
-    bbox_t &getBBOX();
+    const bbox_t &getBBOX();
     void setBBOX(const bbox_t &aBbox);
     void setBBOX(const float aTop, const float aLeft, const float aBottom,
                  const float aRight);
@@ -89,6 +89,9 @@ class ImageAlignment {
     // Get sub pixel value of image
     double getSubPixelValue(const cv::Mat &aImg, const double ax,
                             const double ay);
+
+    void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg, const bbox_t &aBBOX);
+    void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg);
 
     // Track
     void computeJacobian(const cv::Mat &aTemplateImage,
