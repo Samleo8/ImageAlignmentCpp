@@ -648,6 +648,7 @@ void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
 
             // Store in matrix
             Mi[j] = subPix;
+            // aSubImg.at<double>(i, j) = subPix;
         }
     }
 }
