@@ -376,10 +376,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
-    // Warped images
-    cv::Mat warpedImage, warpedSubImage;
-
     for (size_t i = 0; i < aMaxIters; i++) {
+        // Warped images
+        cv::Mat warpedImage; 
+        cv::Mat warpedSubImage(bboxHeight, bboxWidth, CV_64FC1);
         // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
 
         // Error Images
