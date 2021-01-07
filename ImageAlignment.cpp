@@ -337,7 +337,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     cv::Mat templateSubImage;
     getSubPixelRect(templateImageFloat, templateSubImage);
 
-    std::cout << templateSubImage << std::endl;
+    cv::Mat disImg;
+    convertImageForDisplay(templateSubImage, disImg);
+    cv::imshow("Sub image", disImg);
     // cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
     //                   templateSubImage, CV_32FC1);
 
@@ -397,7 +399,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         //                   CV_32F);
 
         getSubPixelRect(warpedImage, warpedSubImage);
-        cv::imshow("warped", warpedSubImage);
+        convertImageForDisplay(warpedSubImage, disImg);
+        cv::imshow("warped", disImg);
         cv::waitKey(1);
 
         // Robust M Estimator Weights
