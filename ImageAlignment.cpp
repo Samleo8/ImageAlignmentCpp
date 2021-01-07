@@ -399,9 +399,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         //                   CV_32F);
 
         getSubPixelRect(warpedImage, warpedSubImage);
-        convertImageForDisplay(warpedSubImage, disImg);
-        cv::imshow("warped", disImg);
-        cv::waitKey(1);
 
         // Robust M Estimator Weights
         Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
@@ -416,10 +413,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         errorVector.resize(N_PIXELS, 1);
 
         // TODO: Remove after debug; currently displays warped image
-        // cv::Mat disImage;
-        // convertImageForDisplay(warpedImage, disImage);
-        // cv::imshow("Warped sub image", disImage);
-        // cv::waitKey(2);
+        cv::Mat disImage;
+        convertImageForDisplay(warpedImage, disImage);
+        cv::imshow("Warped sub image", disImage);
+        cv::waitKey(2);
 
         // std::cout << "Err vec" << errorVector.transpose() << std::endl;
 
