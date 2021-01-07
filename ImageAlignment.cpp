@@ -335,8 +335,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Get actual template sub image
     cv::Mat templateSubImage;
-    cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
-                      templateSubImage, CV_32FC1);
+    getSubPixelRect(templateImageFloat, templateSubImage);
+
+    std::cout << templateSubImage << std::endl;
+    // cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
+    //                   templateSubImage, CV_32FC1);
 
     // TODO: Remove after debugging
     // freopen("output_TImg_cpp.txt", "w", stdout);
@@ -390,8 +393,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
-        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
-                          CV_32F);
+        // cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
+        //                   CV_32F);
+
+        getSubPixelRect(warpedImage, warpedSubImage);
+        cv::imshow("warped", warpedSubImage);
+        cv::waitKey(1);
 
         // Robust M Estimator Weights
         Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
@@ -516,11 +523,27 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
     assert(!aImg.empty());
     assert(aImg.channels() == 1);
 
+    // TODO: Check if ax and ay are integer values
+    // if (isInteger(ax) && isInteger(ay)) {
+    //     // Check type to ensure that we are getting the right values
+    //     // otherwise we'd be accessing a wrong pointer
+    //     switch (aImg.type()) {
+    //         case CV_8S:
+    //         case CV_8U:
+    //             return aImg.at<int>(ay, ax);
+    //         case CV_64F:
+    //             return aImg.at<double>(ay, ax);
+    //         case CV_32F:
+    //         default:
+    //             return aImg.at<float>(ay, ax);
+    //     }
+    // }
+
     // Get the rounded down versions
     // Doesn't really matter if int because the values of ax/ay are unlikely to
     // be so large
-    const int intX = static_cast<int>(ax);
-    const int intY = static_cast<int>(ay);
+    const long intX = static_cast<int>(ax);
+    const long intY = static_cast<int>(ay);
 
     // Interpolate in case at border
     const int x0 =
@@ -589,6 +612,7 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
  *
  * @pre Single channel input and output images
  * @post Sub image should be initialised with correct size
+ * @post Sub image will be of type CV_64FC1
  */
 void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
                                      const bbox_t &aBBOX) {
@@ -611,7 +635,7 @@ void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
     const float deltaY = bboxHeight / (nY - 1);
 
     // Initialise sub image properly
-    aSubImg.create(nX, nY, CV_64FC1);
+    aSubImg.create(nY, nX, CV_64FC1);
 
     for (int i = 0; i < nY; i++) {
         double *Mi = aSubImg.ptr<double>(i);
@@ -621,7 +645,7 @@ void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
 
             double subPix = getSubPixelValue(aImg, x, y);
 
-            // TODO: Store in matrix
+            // Store in matrix
             Mi[j] = subPix;
         }
     }
