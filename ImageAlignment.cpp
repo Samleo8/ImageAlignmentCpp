@@ -619,13 +619,12 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
 void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
                                      const bbox_t &aBBOX) {
     // Init BBOX data
-    const bbox_t &bbox = aBBOX;
-    const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
-    const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
-                                 (bbox[3] + bbox[1]) / 2);
+    const cv::Size2d bboxSize(aBBOX[2] - aBBOX[0], aBBOX[3] - aBBOX[1]);
+    const cv::Point2f bboxCenter((aBBOX[2] + aBBOX[0]) / 2,
+                                 (aBBOX[3] + aBBOX[1]) / 2);
 
-    const float bboxWidth = bbox[2] - bbox[0];
-    const float bboxHeight = bbox[3] - bbox[1];
+    const float bboxWidth = aBBOX[2] - aBBOX[0];
+    const float bboxHeight = aBBOX[3] - aBBOX[1];
 
     // Loop over everything, linearly-spaced
     // https://stackoverflow.com/questions/27028226/python-linspace-in-c
