@@ -586,6 +586,9 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
  * @param[in] aImg Input image
  * @param[out] aSubImg Output subimage
  * @param[in] aBBOX Input bounding box
+ *
+ * @pre Single channel input and output images
+ * @post Sub image should be initialised with correct size
  */
 void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
                                      const bbox_t &aBBOX) {
@@ -607,7 +610,11 @@ void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
     const float deltaX = bboxWidth / (nX - 1);
     const float deltaY = bboxHeight / (nY - 1);
 
+    // Initialise sub image properly
+    aSubImg.create(nX, nY, CV_64FC1);
+
     for (int i = 0; i < nY; i++) {
+        double *Mi = aSubImg.ptr<double>(i);
         float y = bbox[1] + deltaY * i;
         for (int j = 0; j < nX; j++) {
             float x = bbox[0] + deltaX * j;
@@ -615,6 +622,7 @@ void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
             double subPix = getSubPixelValue(aImg, x, y);
 
             // TODO: Store in matrix
+            Mi[j] = subPix;
         }
     }
 }
