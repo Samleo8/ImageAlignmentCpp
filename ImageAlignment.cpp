@@ -477,6 +477,29 @@ void ImageAlignment::printCVMat(const cv::Mat &aMat, const std::string &aName) {
 }
 
 /**
+ * @brief Check if a double is an integer.
+ *
+ * @param[in] aNum Number to check
+ * @param[in] aInftyIsInt Consider infinity as an integer?
+ * @note aInftyIsInt = true is a faster check.
+ *
+ * @ref
+ * https://stackoverflow.com/questions/1521607/check-double-variable-if-it-contains-an-integer-and-not-floating-point
+ *
+ * @return true If integer value (eg. 314.0000)
+ * @return false If non-integer value (eg. 3.14159)
+ */
+bool isInteger(const double aNum, const bool aInftyIsInt) {
+    if (aCareInfty) {
+        double intpart;
+        return (std::modf(aNum, &intpart) == 0.0);
+    }
+    else {
+        return (trunc(aNum) == aNum);
+    }
+}
+
+/**
  * @brief Get sub pixel value in cv Mat using bilinear interpolation
  *
  * @ref https://stackoverflow.com/a/13301755/3141253

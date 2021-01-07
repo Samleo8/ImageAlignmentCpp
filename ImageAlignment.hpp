@@ -46,6 +46,8 @@ class ImageAlignment {
     void printCVMat(const cv::Mat &aMat,
                     const std::string &aName = "CV Matrix");
 
+    bool isInteger(const double aNum, const bool aInftyIsInt = true);
+
   public:
     // Constructor
     ImageAlignment();
