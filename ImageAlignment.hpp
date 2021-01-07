@@ -88,12 +88,12 @@ class ImageAlignment {
 
     void convertImageForDisplay(const cv::Mat &aSrc, cv::Mat &aDest);
 
-    // Get sub pixel value of image
+    // Get sub pixel values of image
     double getSubPixelValue(const cv::Mat &aImg, const double ax,
                             const double ay);
 
-    void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg, const bbox_t &aBBOX);
-    void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg);
+    void getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg, const bbox_t &aBBOX);
+    void getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg);
 
     // Track
     void computeJacobian(const cv::Mat &aTemplateImage,

@@ -246,11 +246,10 @@ void ImageAlignment::computeJacobian(const cv::Mat &aTemplateImage,
     Eigen::RowVector2d delI(2);
 
     // Use OpenCV subpixel rect to be consistent
-    cv::Mat templateGradXSub, templateGradYSub;
-
-    const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
-    const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
-                                 (bbox[3] + bbox[1]) / 2);
+    // cv::Mat templateGradXSub, templateGradYSub;
+    // const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
+    // const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
+    //                              (bbox[3] + bbox[1]) / 2);
 
     // cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradXSub);
     // cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradYSub);
@@ -490,12 +489,13 @@ void ImageAlignment::printCVMat(const cv::Mat &aMat, const std::string &aName) {
  * @return false If non-integer value (eg. 3.14159)
  */
 bool isInteger(const double aNum, const bool aInftyIsInt) {
-    if (aCareInfty) {
-        double intpart;
-        return (std::modf(aNum, &intpart) == 0.0);
+    if (aInftyIsInt) {
+        return (trunc(aNum) == aNum);
     }
     else {
-        return (trunc(aNum) == aNum);
+        double intpart;
+        // TODO: Set it to be epsilon instead?
+        return (std::modf(aNum, &intpart) == 0.0);
     }
 }
 
@@ -577,8 +577,7 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
 }
 
 /**
- * @brief Get sub pixel values of a rectangle. Uses stored BBOX. To use a custom
- * bbox, use the other overloaded function.
+ * @brief Get sub pixel values of a rectangle specified by aBBOX
  *
  * Sub pixel values are obtained using ImageAlignment::getSubPixelValue()
  *
@@ -586,33 +585,18 @@ double ImageAlignment::getSubPixelValue(const cv::Mat &aImg, const double ax,
  *
  * @param[in] aImg Input image
  * @param[out] aSubImg Output subimage
+ * @param[in] aBBOX Input bounding box
  */
-void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg) {
-    // Get template image gradients
-    // NOTE: this is the full image gradient; in the compute Jacobian function
-    // will "crop"
-    cv::Mat templateGradX, templateGradY;
-    cv::Sobel(aTemplateImage, templateGradX, CV_32FC1, 1, 0);
-    cv::Sobel(aTemplateImage, templateGradY, CV_32FC1, 0, 1);
-
-    // Get BBOX
-    const bbox_t &bbox = getBBOX();
-    const float bboxWidth = bbox[2] - bbox[0];
-    const float bboxHeight = bbox[3] - bbox[1];
-
-    // Initialise matrices
-    Eigen::MatrixXd dWdp(2, 6);
-    Eigen::RowVector2d delI(2);
-
-    // Use OpenCV subpixel rect to be consistent
-    cv::Mat templateGradXSub, templateGradYSub;
-
+void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg,
+                                     const bbox_t &aBBOX) {
+    // Init BBOX data
+    const bbox_t &bbox = aBBOX;
     const cv::Size2d bboxSize(bbox[2] - bbox[0], bbox[3] - bbox[1]);
     const cv::Point2f bboxCenter((bbox[2] + bbox[0]) / 2,
                                  (bbox[3] + bbox[1]) / 2);
 
-    // cv::getRectSubPix(templateGradX, bboxSize, bboxCenter, templateGradXSub);
-    // cv::getRectSubPix(templateGradY, bboxSize, bboxCenter, templateGradYSub);
+    const float bboxWidth = bbox[2] - bbox[0];
+    const float bboxHeight = bbox[3] - bbox[1];
 
     // Loop over everything, linearly-spaced
     // https://stackoverflow.com/questions/27028226/python-linspace-in-c
@@ -628,36 +612,11 @@ void ImageAlignment::getSubPixelRect(const cv::Mat &aImg, cv::Mat &aSubImg) {
         for (int j = 0; j < nX; j++) {
             float x = bbox[0] + deltaX * j;
 
-            // Create dWdp matrix
-            dWdp << x, 0, y, 0, 1, 0, //
-                0, x, 0, y, 0, 1;
+            double subPix = getSubPixelValue(aImg, x, y);
 
-            // TODO: Use getSubPixelValue instead
-            double delIx = getSubPixelValue(templateGradX, x, y);
-            double delIy = getSubPixelValue(templateGradY, x, y);
-
-            // Try using cv::getSubPix
-            // double delIx = templateGradXSub.at<float>(i, j);
-            // double delIy = templateGradYSub.at<float>(i, j);
-
-            // double subPix = getSubPixelValue(aTemplateImage, x, y);
-            // std::cout << std::setprecision(2) << std::fixed << subPix << " ";
-
-            // std::cout << std::setprecision(2) << std::fixed << "(" << x <<
-            // ","
-            //           << y << ") " << delIx << " " << delIy << std::endl;
-
-            delI << delIx, delIy;
-
-            aJacobian.row(total) << delI * dWdp;
-            total++;
+            // TODO: Store in matrix
         }
-
-        // std::cout << std::endl;
     }
-
-    // freopen("output_jacobian_cpp.txt", "w", stdout);
-    // std::cout << "Jacobian" << aJacobian << std::endl;
 }
 
 /**

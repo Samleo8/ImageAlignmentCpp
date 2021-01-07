@@ -8,7 +8,7 @@ namespace fs = std::filesystem;
 
 #include "ImageAlignment.hpp"
 
-void printBBOX(bbox_t bbox){
+void printBBOX(const bbox_t &bbox){
     std::cout << "BBOX: ";
     std::cout << "[" << bbox[0] << ", " << bbox[1] << "] ";
     std::cout << "[" << bbox[2] << ", " << bbox[3] << "]";
