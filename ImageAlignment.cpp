@@ -374,7 +374,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     /* Iteratively find best match */
     // Warp matrix (affine warp)
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
-    auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
+    // auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
     for (size_t i = 0; i < aMaxIters; i++) {
         // Warped images
@@ -385,8 +385,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         Eigen::MatrixXd errorVector; // NOTE: dynamic, will flatten later
 
         // Convert to cv::Mat
-        cv::Mat warpMatCV(2, 3, CV_64F);
-        cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
+        // cv::Mat warpMatCV(2, 3, CV_64F);
+        // cv::eigen2cv(static_cast<Eigen::Matrix<double, 2, 3>>(warpMatTrunc),
+        //              warpMatCV);
+
+        cv::Mat warpMatCV(3, 3, CV_64F);
+        cv::eigen2cv(static_cast<Eigen::Matrix<double, 3, 3>>(warpMat),
                      warpMatCV);
 
         // std::cout << "Warp matrix\n" << warpMat << std::endl << warpMatTrunc
@@ -394,7 +398,12 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Perform an affine warp
         // TODO: do we need to inverse? opencv doc is confusing
-        cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE, cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
+        const int cvFlag = cv::INTER_LINEAR + cv::WARP_INVERSE_MAP;
+        cv::warpPerspective(currentImage, warpedImage, warpMatCV, IMAGE_SIZE,
+                            cvFlag);
+
+        // cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE,
+        //                cvFlag);
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
@@ -413,7 +422,7 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // TODO: Remove after debug; currently displays warped image
         cv::Mat disImage;
         convertImageForDisplay(warpedImage, disImage);
-        cv::imshow("Warped sub image", disImage);
+        cv::imshow("Warped image", disImage);
         cv::waitKey(2);
 
         // std::cout << "Err vec" << errorVector.transpose() << std::endl;
