@@ -376,6 +376,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
+    // Robust M Estimator Weights
+    Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
+
     for (size_t i = 0; i < aMaxIters; i++) {
         // Warped images
         cv::Mat warpedImage, warpedSubImage;
@@ -400,9 +403,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // getSubPixelRect(warpedImage, warpedSubImage);
 
-        // Robust M Estimator Weights
-        Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
-
         // Delta P vector
         Eigen::VectorXd deltaP(6);
 
@@ -422,14 +422,14 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Weight for robust M-estimator
         // TODO: Use actual weights, dummy identity for now
-        weights.setIdentity(N_PIXELS);
+        // weights.setIdentity(N_PIXELS);
 
-        const Eigen::MatrixXd weightedJTrans = JacobianTransposed * weights;
+        const Eigen::MatrixXd weightedJTrans = JacobianTransposed; // * weights;
         const Eigen::MatrixXd Hessian = weightedJTrans * Jacobian;
         const Eigen::VectorXd vectorB = weightedJTrans * errorVector;
 
         // Solve for new deltaP
-        deltaP = Hessian.ldlt().solve(vectorB);
+        deltaP = Hessian.inverse() * vectorB;
         // std::cout << "deltaP\n" << deltaP.transpose() << std::endl <<
         // std::endl; std::cout << "Hessian\n"
         //           << Hessian << "HessianInverse" << Hessian.inverse()
