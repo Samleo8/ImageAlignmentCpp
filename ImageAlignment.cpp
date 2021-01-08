@@ -393,7 +393,8 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // << "\n\n";
 
         // Perform an affine warp
-        cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE, cv::INTER_LINEAR);
+        // TODO: do we need to inverse? opencv doc is confusing
+        cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE, cv::INTER_LINEAR + cv::WARP_INVERSE_MAP);
 
         cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
                           CV_32F);
