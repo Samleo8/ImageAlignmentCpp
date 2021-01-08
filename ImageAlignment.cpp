@@ -335,13 +335,13 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
     // Get actual template sub image
     cv::Mat templateSubImage;
-    getSubPixelRect(templateImageFloat, templateSubImage);
+    // getSubPixelRect(templateImageFloat, templateSubImage);
+    cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
+                      templateSubImage, CV_32FC1);
 
     cv::Mat disImg;
     convertImageForDisplay(templateSubImage, disImg);
     cv::imshow("Sub image", disImg);
-    // cv::getRectSubPix(templateImageFloat, bboxSize, bboxCenter,
-    //                   templateSubImage, CV_32FC1);
 
     // TODO: Remove after debugging
     // freopen("output_TImg_cpp.txt", "w", stdout);
@@ -376,11 +376,9 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
-    cv::Mat warpedSubImage(bboxHeight, bboxWidth, CV_64FC1);
-
     for (size_t i = 0; i < aMaxIters; i++) {
         // Warped images
-        cv::Mat warpedImage;
+        cv::Mat warpedImage, warpedSubImage;
         // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
 
         // Error Images
@@ -397,15 +395,10 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         // Perform an affine warp
         cv::warpAffine(currentImage, warpedImage, warpMatCV, IMAGE_SIZE);
 
-        // cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
-        //                   CV_32F);
+        cv::getRectSubPix(warpedImage, bboxSize, bboxCenter, warpedSubImage,
+                          CV_32F);
 
-        getSubPixelRect(warpedImage, warpedSubImage);
-
-        std::cout << "types" << std::endl;
-        std::cout << warpedImage.type() << " " << warpedSubImage.type() << std::endl;
-        std::cout << templateImage.type() << " " << templateSubImage.type()
-                  << std::endl;
+        // getSubPixelRect(warpedImage, warpedSubImage);
 
         // Robust M Estimator Weights
         Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
@@ -415,7 +408,6 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
 
         // Obtain errorImage which will then be converted to flattened image
         // vector;
-        // warpedSubImage.convertTo(warpedSubImage, CV_64FC1);
         const cv::Mat errorImage = warpedSubImage - templateSubImage;
         cv::cv2eigen(errorImage, errorVector);
         errorVector.resize(N_PIXELS, 1);
