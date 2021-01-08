@@ -376,10 +376,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
     Eigen::Matrix3d warpMat = Eigen::Matrix3d::Identity();
     auto warpMatTrunc = warpMat.topRows(2); // NOTE: alias
 
+    cv::Mat warpedSubImage(bboxHeight, bboxWidth, CV_64FC1);
+
     for (size_t i = 0; i < aMaxIters; i++) {
         // Warped images
-        cv::Mat warpedImage; 
-        cv::Mat warpedSubImage(bboxHeight, bboxWidth, CV_64FC1);
+        cv::Mat warpedImage;
         // Eigen::MatrixXd warpedSubImage(bboxWidth, bboxHeight);
 
         // Error Images
@@ -400,6 +401,11 @@ void ImageAlignment::track(const cv::Mat &aNewImage, const float aThreshold,
         //                   CV_32F);
 
         getSubPixelRect(warpedImage, warpedSubImage);
+
+        std::cout << "types" << std::endl;
+        std::cout << warpedImage.type() << " " << warpedSubImage.type() << std::endl;
+        std::cout << templateImage.type() << " " << templateSubImage.type()
+                  << std::endl;
 
         // Robust M Estimator Weights
         Eigen::DiagonalMatrix<double, Eigen::Dynamic> weights;
